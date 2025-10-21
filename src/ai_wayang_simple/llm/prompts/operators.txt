@@ -1,0 +1,127 @@
+## Operators Definition (for Apache Wayang plan generation)
+
+All operators represent transformation steps in a Wayang plan.  
+They are divided into three categories: **Input Operators**, **Unary Operators**, and **Binary Operators**.
+
+Each operator must include the following base fields:
+- **id** — Unique integer identifier for the operation (sequential number in the plan).  
+- **input** — The `id` of the operator that provides its input data.  
+- **output** — The `id` of the operator that receives its output data.  
+
+
+---
+
+## 1. Input Operators
+
+An input operator always have zero input but one to more outputs
+
+### **jdbcRemoteInput**
+- **Description:** Reads data from a database table using a JDBC connection.  
+- **Use when:** You need to load data from a relational database into the Wayang pipeline.  
+- **Fields:**  
+  - `cat`: `"input"`  
+  - `operationName`: `"jdbcRemoteInput"`  
+  - `table`: Name of the table to read from  
+  - `columnNames`: List of columns to read  
+  - `id`: Unique ID of this operator  
+  - `output`: ID of the next operator or operators if more uses it for input
+
+---
+
+## 2. Unary Operators
+
+You can choose from the following **unary data transformation operations**.  
+Each operator consumes a single input dataset and produces a single output dataset.
+
+An unary operator always have a single input and a single output
+
+---
+
+### **Map**
+- **Description:** Apply a function to each element (1 input → 1 output).  
+- **Use when:** You need to transform data element-wise, e.g. compute new values or change structure.  
+- **Fields:**
+  - `cat`: `"unary"`  
+  - `operationName`: `"map"`  
+  - `UDF`: Scala function applied to each element  
+  - `id`, `input`, `output`
+
+---
+
+### **FlatMap**
+- **Description:** Apply a function that can return zero, one, or many elements (1 input → 0..n outputs).  
+- **Use when:** Expanding or exploding data, e.g. splitting lists or strings.  
+- **Fields:**  
+  - `cat`: `"unary"`  
+  - `operationName`: `"flatMap"`  
+  - `UDF`: Scala function returning a list or sequence  
+  - `id`, `input`, `output`
+
+---
+
+### **Filter**
+- **Description:** Keep only elements that satisfy a Boolean condition.  
+- **Use when:** Removing unwanted elements.  
+- **Fields:**  
+  - `cat`: `"unary"`  
+  - `operationName`: `"filter"`  
+  - `UDF`: Scala predicate function returning Boolean  
+  - `id`, `input`, `output`
+
+---
+
+### **Reduce**
+- **Description:** Combine all elements into one using a binary function `(A, A) => A`.  
+- **Use when:** Producing a single aggregated result (e.g. sum, max).  
+- **Fields:**  
+  - `cat`: `"unary"`  
+  - `operationName`: `"reduce"`  
+  - `UDF`: Scala binary reduction function  
+  - `id`, `input`, `output`
+
+---
+
+### **ReduceBy**
+- **Description:** Group elements by a key and reduce within each group.  
+- **Use when:** You need grouped aggregation (e.g. sum by category).  
+- **Fields:**  
+  - `cat`: `"unary"`  
+  - `operationName`: `"reduceBy"`  
+  - `KeyUDF`: Scala key extraction function  
+  - `UDF`: Scala reduction function per group  
+  - `id`, `input`, `output`
+
+---
+
+### **GroupBy**
+- **Description:** Group elements sharing the same key.  
+- **Use when:** Clustering elements before further processing.  
+- **Fields:**  
+  - `cat`: `"unary"`  
+  - `operationName`: `"groupBy"`  
+  - `KeyUDF`: Scala key extraction function  
+  - `id`, `input`, `output`
+
+---
+
+### **Sort**
+- **Description:** Order elements by a given key, ascending or descending.  
+- **Use when:** Sorting data by key or value.  
+- **Fields:**  
+  - `cat`: `"unary"`  
+  - `operationName`: `"sort"`  
+  - `UDF`: Scala key function used for ordering  
+  - `id`, `input`, `output`
+
+---
+
+## 3. Binary Operators
+
+---
+
+### General Notes
+- Each operator must define a unique **id**.  
+- The **input** and **output** fields establish the execution flow between operators.  
+- **Binary operators** (e.g. `join`) have **two input references** (`inputLeft`, `inputRight`).  
+- The final JSON output must conform to the **Wayang JSON schema** used by the `text_format` parser.  
+- Keep `OperationName` values **exactly** as listed above.

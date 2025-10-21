@@ -1,0 +1,24 @@
+## Tables Definition (Available Data Sources)
+
+You can only use the following **tables** as data sources.  
+Each table contains a set of **columns** with defined meanings.  
+When generating a plan, always reference tables and columns **exactly as defined below**.
+
+---
+
+### **Table: person_test**
+The following columns describe the structure and meaning of data in the `person_test` table:
+
+- **id** — Unique identifier of a person  
+- **navn** — Name of the person  
+- **alder** — Age of the person  
+- **email** — Email address of the person  
+- **created_at** — Timestamp when the record (person instance) was created  
+
+---
+
+### General Notes
+- Always reference column names **exactly** as shown (case-sensitive).  
+- Tables are the **input sources** used in operations.  
+- When defining a plan step, refer to the correct table name and its columns.  
+- Do not invent new tables or columns that are not listed here.  
