@@ -6,7 +6,7 @@ load_dotenv()
 
 # Server port for MCP server
 MCP_CONFIG = {
-    "port": int(os.getenv("MCP_PORT", 9400))
+    "port": int(os.getenv("MCP_PORT", 9500))
 }
 
 # LLM client model settings
@@ -25,4 +25,8 @@ JDBC_CONFIG = {
 # Log settings
 LOG_CONFIG = {
     "log_folder": os.getenv("LOG_FOLDER")
+}
+
+WAYANG_CONFIG = {
+    "server_path": os.getenv("WAYANG_SERVER")
 }
