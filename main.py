@@ -11,7 +11,8 @@ from src.ai_wayang_simple.server.mcp_server import mcp
 
 def main():
 
-    mcp.run(transport="streamable-http")
+    #mcp.run(transport="streamable-http")
+    mcp.run(transport="sse")
     print(f"Starts MCP-server")
 
 if __name__ == "__main__":

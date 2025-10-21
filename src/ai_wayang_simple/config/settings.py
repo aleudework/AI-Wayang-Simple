@@ -28,5 +28,5 @@ LOG_CONFIG = {
 }
 
 WAYANG_CONFIG = {
-    "server_path": os.getenv("WAYANG_SERVER")
+    "server_url": os.getenv("WAYANG_URL")
 }

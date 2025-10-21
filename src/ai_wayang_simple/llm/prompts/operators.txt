@@ -43,7 +43,7 @@ An unary operator always have a single input and a single output
 - **Fields:**
   - `cat`: `"unary"`  
   - `operationName`: `"map"`  
-  - `UDF`: Scala function applied to each element  
+  - `UDF`: Scala lambda function applied to each element  
   - `id`, `input`, `output`
 
 ---
@@ -54,7 +54,7 @@ An unary operator always have a single input and a single output
 - **Fields:**  
   - `cat`: `"unary"`  
   - `operationName`: `"flatMap"`  
-  - `UDF`: Scala function returning a list or sequence  
+  - `UDF`: Scala lambda function returning a list or sequence  
   - `id`, `input`, `output`
 
 ---
@@ -65,7 +65,7 @@ An unary operator always have a single input and a single output
 - **Fields:**  
   - `cat`: `"unary"`  
   - `operationName`: `"filter"`  
-  - `UDF`: Scala predicate function returning Boolean  
+  - `UDF`: Scala lambda predicate function returning Boolean  
   - `id`, `input`, `output`
 
 ---
@@ -88,7 +88,7 @@ An unary operator always have a single input and a single output
   - `cat`: `"unary"`  
   - `operationName`: `"reduceBy"`  
   - `KeyUDF`: Scala key extraction function  
-  - `UDF`: Scala reduction function per group  
+  - `UDF`: Scala lambda reduction function per group  
   - `id`, `input`, `output`
 
 ---

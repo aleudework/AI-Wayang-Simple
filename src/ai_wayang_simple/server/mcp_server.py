@@ -2,6 +2,7 @@ from mcp.server.fastmcp import FastMCP
 from ai_wayang_simple.config.settings import MCP_CONFIG, JDBC_CONFIG
 from ai_wayang_simple.llm.client import LLMClient
 from ai_wayang_simple.wayang.plan_builder import PlanBuilder
+from ai_wayang_simple.wayang.wayang_executor import WayangExecutor
 from datetime import datetime
 import json
 
@@ -55,8 +56,15 @@ def query_wayang(describe_wayang_plan: str) -> str:
                     return str(obj)  # fallback for things like ResponseUsage
             
             json.dump(log, f, indent=4, ensure_ascii=False, default=safe)
-        
-        return "Success"
+
+        print("[INFO] Log printed")
+ 
+        wayang_executor = WayangExecutor()
+        output = wayang_executor.execute_plan(compiled_plan)
+
+        print("[INFO] Wayang executed")
+
+        return output
     
     except Exception as e:
         print(f"[ERROR] {e}")
@@ -66,3 +74,28 @@ def query_wayang(describe_wayang_plan: str) -> str:
 @mcp.tool()
 def greeto(name: str) -> str:
     return f"Hello:)), {name}!"
+
+# Wayang plan to extract initials from input
+
+def extract_initials(input_text):
+    """
+    Extracts and returns the initials of each word in the input text.
+
+    Args:
+        input_text (str): The input string to process.
+
+    Returns:
+        str: A string containing the initials of each word.
+    """
+    if not input_text.strip():
+        return ""  # Return empty string for empty or whitespace-only input
+
+    words = input_text.split()
+    initials = [word[0] for word in words if word]  # Extract first letter of each word
+    return ''.join(initials)
+
+# Example usage
+if __name__ == "__main__":
+    sample_input = "Wayang Artificial Intelligence"
+    print("Input:", sample_input)
+    print("Output:", extract_initials(sample_input))
