@@ -41,6 +41,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
         log = {
             "model": response['raw'].model,
             "usage": response['raw'].usage,
+            "prompt": describe_wayang_plan,
             "llm_plan": draft_plan,
             "compiled_plan": compiled_plan
         }
@@ -74,28 +75,3 @@ def query_wayang(describe_wayang_plan: str) -> str:
 @mcp.tool()
 def greeto(name: str) -> str:
     return f"Hello:)), {name}!"
-
-# Wayang plan to extract initials from input
-
-def extract_initials(input_text):
-    """
-    Extracts and returns the initials of each word in the input text.
-
-    Args:
-        input_text (str): The input string to process.
-
-    Returns:
-        str: A string containing the initials of each word.
-    """
-    if not input_text.strip():
-        return ""  # Return empty string for empty or whitespace-only input
-
-    words = input_text.split()
-    initials = [word[0] for word in words if word]  # Extract first letter of each word
-    return ''.join(initials)
-
-# Example usage
-if __name__ == "__main__":
-    sample_input = "Wayang Artificial Intelligence"
-    print("Input:", sample_input)
-    print("Output:", extract_initials(sample_input))

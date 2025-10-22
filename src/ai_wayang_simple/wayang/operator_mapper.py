@@ -25,9 +25,7 @@ class OperatorMapper:
             "output": self.op.output,
             "operatorName": "map",
             "data": {
-                "udf": self.op.udf,
-                "inputType": None,
-                "outputType": None
+                "udf": self.op.udf
             }
         }
 
@@ -41,9 +39,7 @@ class OperatorMapper:
             "output": self.op.output,
             "operatorName": "flatMap",
             "data": {
-                "udf": self.op.udf,
-                "inputType": None,
-                "outputType": None
+                "udf": self.op.udf
             }
         }
     
@@ -57,14 +53,13 @@ class OperatorMapper:
             "output": self.op.output,
             "operatorName": "filter",
             "data": {
-                "udf": self.op.udf,
-                "inputType": None,
-                "outputType": None
+                "udf": self.op.udf
             }
         }
     
     def reduce(self):
         self.validate()
+        # Reduce may always need a keyUDF
 
         return {
             "id": self.op.id,
@@ -73,9 +68,8 @@ class OperatorMapper:
             "output": self.op.output,
             "operatorName": "reduce",
             "data": {
-                "udf": self.op.udf,
-                "inputType": None,
-                "outputType": None
+                "keyUdf": "(_ : Any) => 1",
+                "udf": self.op.udf
             }
         }
 
@@ -90,9 +84,7 @@ class OperatorMapper:
             "operatorName": "reduceBy",
             "data": {
                 "keyUdf": self.op.keyUdf,
-                "udf": self.op.udf,
-                "inputType": None,
-                "outputType": None
+                "udf": self.op.udf
             }
         }
 
@@ -106,9 +98,7 @@ class OperatorMapper:
             "output": self.op.output,
             "operatorName": "groupBy",
             "data": {
-                "udf": self.op.udf,
-                "inputType": None,
-                "outputType": None
+                "udf": self.op.udf
             }
         }
 
@@ -122,14 +112,17 @@ class OperatorMapper:
             "output": self.op.output,
             "operatorName": "sort",
             "data": {
-                "keyUdf": self.op.keyUdf,
-                "inputType": None,
-                "outputType": None
+                "keyUdf": self.op.keyUdf
             }
         }
     
     def jdbc_input(self, config):
         self.validate()
+
+        # Creates SQL-select query
+        # Important for keeping the correct placement / index
+        columns = ", ".join(self.op.columnNames)
+        table_query = f"(SELECT {columns} FROM {self.op.table}) as X"
 
         return {
             "id": self.op.id,
@@ -141,7 +134,7 @@ class OperatorMapper:
                 "uri": config["jdbc_uri"],
                 "username": config["jdbc_username"],
                 "password": config["jdbc_password"],
-                "table": self.op.table,
+                "table": table_query,
                 "columnNames": self.op.columnNames
             }
         }

@@ -9,11 +9,17 @@ When generating a plan, always reference tables and columns **exactly as defined
 ### **Table: person_test**
 The following columns describe the structure and meaning of data in the `person_test` table:
 
-- **id** — Unique identifier of a person  
-- **navn** — Name of the person  
-- **alder** — Age of the person  
-- **email** — Email address of the person  
-- **created_at** — Timestamp when the record (person instance) was created  
+{
+  "person_test": {
+    "columns": [
+      { "position": 0, "name": "id", "type": "integer" },
+      { "position": 1, "name": "navn", "type": "character varying" },
+      { "position": 2, "name": "alder", "type": "integer" },
+      { "position": 3, "name": "email", "type": "character varying" },
+      { "position": 4, "name": "created_at", "type": "date" }
+    ]
+  }
+}
 
 ---
 

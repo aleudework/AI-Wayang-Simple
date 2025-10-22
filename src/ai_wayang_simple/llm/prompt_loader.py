@@ -18,10 +18,8 @@ class PromptLoader:
         data_prompt = self._read_file("data.txt")
 
         # Build prompt
-        system_prompt = system_prompt.format(
-            data=data_prompt,
-            operators=operators_prompt
-        )
+        system_prompt = system_prompt.replace("{data}", data_prompt)
+        system_prompt = system_prompt.replace("{operators}", operators_prompt)
 
         self.system_prompt = system_prompt
         return self.system_prompt
