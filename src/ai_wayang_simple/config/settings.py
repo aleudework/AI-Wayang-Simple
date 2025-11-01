@@ -10,9 +10,17 @@ MCP_CONFIG = {
 }
 
 # LLM client model settings
-MODEL_CONFIG = {
-    "model": os.getenv("LLM_MODEL", "gpt-5-nano"),
-    "reason_effort": os.getenv("REASON_EFFORT", None)
+BUILDER_MODEL_CONFIG = {
+    "model": os.getenv("BUILDER_LLM", "gpt-5-nano"),
+    "reason_effort": os.getenv("BUILDER_REASON_EFFORT", None)
+}
+
+# Debugger LLM model settings
+DEBUGGER_MODEL_CONFIG = {
+    "use_debugger": os.getenv("USE_DEBUGGER", "False"),
+    "model": os.getenv("DEBUGGER_LLM", "gpt-5-nano"),
+    "reason_effort": os.getenv("DEBUGGER_REASON_EFFORT", None),
+    "max_itr": os.getenv("MAX_ITERATIONS", 5)
 }
 
 # JDBC settings
@@ -24,7 +32,7 @@ JDBC_CONFIG = {
 
 # Log settings
 LOG_CONFIG = {
-    "log_folder": os.getenv("LOG_FOLDER")
+    "log_folder": os.getenv("LOG_FOLDER", None)
 }
 
 WAYANG_CONFIG = {

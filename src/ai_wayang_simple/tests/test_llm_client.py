@@ -1,8 +1,8 @@
 import pytest
-from ai_wayang_simple.llm.client import LLMClient
+from ai_wayang_simple.llm.agent_builder import Builder
 
 def test_llm_output():
-    llm = LLMClient()
+    llm = Builder()
     prompt = "Fill the plan simple and fast"
     output = llm.generate_plan(prompt)
 

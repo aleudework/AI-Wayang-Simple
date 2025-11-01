@@ -9,6 +9,8 @@ Each operator must include the following base fields:
 - **output** — The `id` of the operator that receives its output data.  
 
 
+Always remember to start the first operation (input operation) with id = 1 (not 0)
+
 ---
 
 ## 1. Input Operators

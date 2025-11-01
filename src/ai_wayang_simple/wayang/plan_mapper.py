@@ -2,7 +2,7 @@ from ai_wayang_simple.llm.models import WayangOperation, WayangPlan
 from ai_wayang_simple.wayang.operator_mapper import OperatorMapper
 from typing import List
 
-class PlanBuilder:
+class PlanMapper:
     def __init__(self, config):
         self.config = config
         self.plan = self._new_plan()
@@ -24,7 +24,7 @@ class PlanBuilder:
             "operators": []
         }
 
-    def build(self, plan_draft: WayangPlan, output_path: str):
+    def map(self, plan_draft: WayangPlan, output_path: str):
         """
         Converts WayangPlan til JSON Wayang plan (correct formatting)
         """
@@ -74,4 +74,31 @@ class PlanBuilder:
             "data": {"filename": output_path}
         })
 
+    def anonymize_plan(self, wayang_plan):
+        """
+        Anonymize username and password in JDBC input. Mainly for debugger
+        """
+        for operation in wayang_plan["operators"]:
+            if operation.get("operatorName") == "jdbcRemoteInput":
+                data = operation.get("data", {})
+                data["username"] = "anonymized"
+                data["password"] = "anonymized"
+                operation["data"] = data
+
+        return wayang_plan
+    
+    def unanonymize_plan(self, anonymized_plan):
+        """
+        Redo anonymization of username and password in JDBC input. Mainly for debugger
+        """
+        for operation in anonymized_plan["operators"]:
+            if operation.get("operatorName") == "jdbcRemoteInput":
+                data = operation.get("data", {})
+                data["username"] = self.config["jdbc_username"]
+                data["password"] = self.config["jdbc_password"]
+                operation["data"] = data
+
+        return anonymized_plan
+    
+    
 

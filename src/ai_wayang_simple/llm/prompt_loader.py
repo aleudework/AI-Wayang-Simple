@@ -6,23 +6,45 @@ class PromptLoader:
     """
     def __init__(self, path: str | None = None):
         self.path = Path(__file__).resolve().parent / "prompts"
-        self.system_prompt = self.load_system_prompt()
     
-    def load_system_prompt(self) -> str:
+    def load_builder_system_prompt(self) -> str:
         """
-        Load and build system prompt
+        Load and build system prompt for builder agent
         """
 
-        system_prompt = self._read_file("system_prompt.txt")
+        # Get prompt templates
+        system_prompt = self._read_file("builder_system_prompt.txt")
         operators_prompt = self._read_file("operators.txt")
         data_prompt = self._read_file("data.txt")
+        few_shot = None
 
-        # Build prompt
+        # Fill system prompt template
         system_prompt = system_prompt.replace("{data}", data_prompt)
         system_prompt = system_prompt.replace("{operators}", operators_prompt)
 
-        self.system_prompt = system_prompt
-        return self.system_prompt
+        return system_prompt
+    
+    def load_debugger_system_prompt(self) -> str:
+        """
+        Load and build system prompt for debugger agent
+        """
+
+        # Get and return system prompt
+        return self._read_file("debugger_system_prompt.txt")
+    
+    def load_debugger_prompt_template(self, failed_plan: str, error: str) -> str:
+        """
+        Output a new message for the debugger agent to handle on
+        """
+
+        # Get prompt template
+        prompt_template = self._read_file("debugger_standard_prompt.txt")
+
+        # Fill template
+        prompt_template = prompt_template.replace("{failed_plan}", failed_plan)
+        prompt_template = prompt_template.replace("{error}", error)
+
+        return prompt_template
     
     def _read_file(self, file) -> str:
         """

@@ -4,13 +4,15 @@ Entrypoint
 import sys
 from pathlib import Path
 
-# Tilføj src-mappen til Pythons søgesti
+# Add src folder so modules can be found
 sys.path.append(str(Path(__file__).resolve().parent / "src"))
 
 from src.ai_wayang_simple.server.mcp_server import mcp
 
 def main():
-
+    """
+    Starts the MCP-server
+    """
     #mcp.run(transport="streamable-http")
     mcp.run(transport="sse")
     print(f"Starts MCP-server")

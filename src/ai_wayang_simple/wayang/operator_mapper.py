@@ -1,5 +1,3 @@
-from ai_wayang_simple.llm.models import WayangOperation, WayangPlan
-from typing import List
 
 class OperatorMapper:
     def __init__(self, operation):
@@ -12,7 +10,7 @@ class OperatorMapper:
         if self.op.cat == 'unary' and len(self.op.output) > 1:
             raise ValueError('Unary operators can only have a single output')
         
-        if self.op.cat == 'unary' and len(self.op.input) is not 1:
+        if self.op.cat == 'unary' and len(self.op.input) != 1:
             raise ValueError('Unary operators must have excatly one input')
 
     def map(self):
@@ -98,7 +96,7 @@ class OperatorMapper:
             "output": self.op.output,
             "operatorName": "groupBy",
             "data": {
-                "udf": self.op.udf
+                "keyUdf": self.op.keyUdf
             }
         }
 

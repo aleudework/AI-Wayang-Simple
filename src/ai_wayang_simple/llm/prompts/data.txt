@@ -21,6 +21,21 @@ The following columns describe the structure and meaning of data in the `person_
   }
 }
 
+### **Table: adresse_test**
+The following columns describe the structure and meaning of data in the `adresse_test` table:
+
+{
+  "adresse_test": {
+    "columns": [
+      { "position": 0, "name": "id", "type": "integer" },
+      { "position": 1, "name": "person_id", "type": "integer" },
+      { "position": 2, "name": "vejnavn", "type": "character varying" },
+      { "position": 3, "name": "postnummer", "type": "character varying" },
+      { "position": 4, "name": "by", "type": "character varying" }
+    ]
+  }
+}
+
 ---
 
 ### General Notes
