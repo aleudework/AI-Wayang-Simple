@@ -50,18 +50,31 @@ def query_wayang(describe_wayang_plan: str) -> str:
 
         # Log
         print("[INFO] Plan mapped")
-        logger.add_message("Mapped plan finilized for execution", {"version": 1, "plan": wayang_plan})
+        logger.add_message("Mapped plan finalized for execution", {"version": 1, "plan": wayang_plan})
 
-        # Execute plan
-        print("[INFO] Plan sent to Wayang for execution")
-        wayang_executor = WayangExecutor()
-        status_code, output = wayang_executor.execute_plan(wayang_plan)
+        # Validate plan before execution
+        if plan_mapper.validate_plan(wayang_plan):
 
-        # Return output when success
-        if status_code == 200:
-            print("[INFO] Plan succesfully executed")
-            logger.add_message("Plan executed", "Success")
-            return output
+            # Execute plan
+            print("[INFO] Plan sent to Wayang for execution")
+            wayang_executor = WayangExecutor()
+            status_code, output = wayang_executor.execute_plan(wayang_plan)
+
+            # Return output when success
+            if status_code == 200:
+                print("[INFO] Plan succesfully executed")
+                logger.add_message("Plan executed", "Success")
+                return output
+            else:
+                print(f"[INFO] Couldn't execute plan succesfully, status {status_code}")
+                logger.add_message("Plan executed unsucessful", {"status_code": status_code, "output": output})
+        
+        # For failed validation, goes straight to debugging if debugging
+        else:
+            print("[INFO] Plan failed validation before execution")
+            logger.add_message("Failed validation", "Plan failed validation before execution")
+            status_code = 0
+            output = None
         
         # Check if debugger should be used
         use_debugger = DEBUGGER_MODEL_CONFIG.get("use_debugger")
@@ -70,11 +83,10 @@ def query_wayang(describe_wayang_plan: str) -> str:
         if use_debugger == "True":
             
             # Logs from first fail
-            print(f"[INFO] Couldn't execute plan succesfully, status {status_code}")
-            logger.add_message("Plan executed unsucessful", {"status_code": status_code, "output": output})
+
             
             # Start logging
-            print("[INFO] Initialize and use debugger to fix plan")
+            print("[INFO] Initialize and use Debugger Agent to fix plan")
 
             # Initialize debugger and max iterations to fix
             max_itr = int(DEBUGGER_MODEL_CONFIG.get("max_itr"))
@@ -143,3 +155,10 @@ def query_wayang(describe_wayang_plan: str) -> str:
 @mcp.tool()
 def greeto(name: str) -> str:
     return f"Hello:)), {name}!"
+
+
+# Implement few-shot prompting
+# Implement joins oepraiton
+# Implement multiple output operations
+# Implement that the Debugger DON't change filenames / output names
+# Add More data 

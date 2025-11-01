@@ -23,6 +23,52 @@ class PlanMapper:
             "context": { "platforms": ["java"], "configuration": {} },
             "operators": []
         }
+    
+    def validate_plan(self, plan) -> bool:
+        """
+        Validates if a plan is correctly mapped
+        """
+        try:
+            for i, operation in enumerate(plan["operators"]):
+                # Check unary operations
+                if operation.get("cat") == "unary":
+                    input = operation.get("input", [])
+                    output = operation.get("output", [])
+                    id = int(operation.get("id", -1))
+
+                    # Input must have at least one id
+                    if len(input) < 1:
+                        print("[VALIDATON ERROR] Missing input operator")
+                        return False
+
+                    # Output must have a least one id and not be the last operation
+                    if len(output) < 1 and i != len(plan["operators"]) - 1:
+                        # Temp, to test for last output
+                        if i == len(plan["operators"]) - 2:
+                            continue
+                        
+                        print("[VALIDATON ERROR] Missing output operator")
+                        return False
+                    
+                    # Input id's must be lower than the operation id itself
+                    for input_id in input:
+                        if input_id >= id:
+                            print("[VALIDATON ERROR] Input value higher than operation id")
+                            return False
+
+                    # Output id's must be higher than the operation id itself
+                    for output_id in output:
+                        if output_id <= id:
+                            print("[VALIDATON ERROR] Output value lower than operation id")
+                            return False
+                    
+
+            return True
+
+        except Exception as e:
+            print(e)
+            return False
+        
 
     def map(self, plan_draft: WayangPlan, output_path: str):
         """

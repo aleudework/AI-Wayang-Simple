@@ -1,0 +1,9 @@
+This is the Wayang JSON plan to fix:
+
+{failed_plan}
+
+This is the error from the server
+
+{error}
+
+Return ONLY in JSON and nothing else

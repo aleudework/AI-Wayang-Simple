@@ -18,10 +18,3 @@ class WayangExecutor:
         except requests.exceptions.RequestException as e:
             raise Exception(e)
     
-# TODO
-# - Find out why err_msg don't show up (Scala error msg may be different?)
-# - Make the server part handle, so if there is an error, then make an option - or like that - to output it
-# - Make joins in the operators
-# - Make different input and output operators - Output first
-# - Give output to the client and make sure why there is a timeout time for mcp.
-    

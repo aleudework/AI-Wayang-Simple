@@ -70,8 +70,7 @@ class Debugger:
         Helper to initialize system prompt
         """
 
-        chat = [{"role": "system", "content": self.system_prompt}]
-        self.chat = chat
+        return [{"role": "system", "content": self.system_prompt}]
     
 
     def _extract_json(self, text):

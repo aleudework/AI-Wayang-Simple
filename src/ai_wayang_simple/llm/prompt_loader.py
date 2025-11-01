@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 
 class PromptLoader:
     """
@@ -39,6 +40,14 @@ class PromptLoader:
 
         # Get prompt template
         prompt_template = self._read_file("debugger_standard_prompt.txt")
+
+        # Convert to JSON
+        if not isinstance(failed_plan, str):
+            failed_plan = json.dumps(failed_plan, indent=4)
+
+        # Convert to JSON
+        if not isinstance(error, str):
+            error = json.dumps(error, indent=4)
 
         # Fill template
         prompt_template = prompt_template.replace("{failed_plan}", failed_plan)
