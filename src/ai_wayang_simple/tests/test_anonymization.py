@@ -1,7 +1,9 @@
 from ai_wayang_simple.wayang.plan_mapper import PlanMapper
-from ai_wayang_simple.config.settings import MCP_CONFIG, JDBC_CONFIG, DEBUGGER_MODEL_CONFIG
+from ai_wayang_simple.config.settings import MCP_CONFIG, DEBUGGER_MODEL_CONFIG, INPUT_CONFIG, OUTPUT_CONFIG
 
-plan_mapper = PlanMapper(JDBC_CONFIG)
+config = {"input_config": INPUT_CONFIG, "output_config": OUTPUT_CONFIG}
+
+plan_mapper = PlanMapper(config)
 
 plan = {
     "context": {

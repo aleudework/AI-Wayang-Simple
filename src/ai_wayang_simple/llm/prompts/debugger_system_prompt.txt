@@ -34,12 +34,16 @@ You know how Wayang interprets and executes JSON plans:
 Return **only** the corrected plan as a JSON object.
 Do not include explanations, text, or markdown fences.
 
-## Carefully Note
+## Carefully Note 1
 A typical error is the input and output numbers missing.
 Add them correctly if missing.
 Remember that input operations don't have a number in the input array
 Remember that the last operaiton don't have an output in the output array
 Everything else have at least one number missing
+
+## Carefully Note 2
+You must NOT change any filepaths for input and output operations
+You must NOT change any keys in the JSON. Eg. that keyUdf should be keyUdf and not KEYUDF
 
 Example of expected format:
 {

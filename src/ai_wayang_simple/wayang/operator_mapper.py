@@ -1,20 +1,12 @@
+from datetime import datetime
+import os
+import urllib.parse
 
 class OperatorMapper:
     def __init__(self, operation):
         self.op = operation
-    
-    def validate(self):
-        if self.op.id is None:
-            raise ValueError('ID must not be null')
-        
-        if self.op.cat == 'unary' and len(self.op.output) > 1:
-            raise ValueError('Unary operators can only have a single output')
-        
-        if self.op.cat == 'unary' and len(self.op.input) != 1:
-            raise ValueError('Unary operators must have excatly one input')
 
     def map(self):
-        self.validate()
 
         return {
             "id": self.op.id,
@@ -28,7 +20,6 @@ class OperatorMapper:
         }
 
     def flatmap(self):
-        self.validate()
 
         return {
             "id": self.op.id,
@@ -42,7 +33,6 @@ class OperatorMapper:
         }
     
     def filter(self):
-        self.validate()
 
         return {
             "id": self.op.id,
@@ -56,7 +46,6 @@ class OperatorMapper:
         }
     
     def reduce(self):
-        self.validate()
         # Reduce may always need a keyUDF
 
         return {
@@ -72,7 +61,6 @@ class OperatorMapper:
         }
 
     def reduceby(self):
-        self.validate()
 
         return {
             "id": self.op.id,
@@ -87,7 +75,6 @@ class OperatorMapper:
         }
 
     def groupby(self):
-        self.validate()
 
         return {
             "id": self.op.id,
@@ -101,7 +88,6 @@ class OperatorMapper:
         }
 
     def sort(self):
-        self.validate()
 
         return {
             "id": self.op.id,
@@ -115,8 +101,6 @@ class OperatorMapper:
         }
     
     def jdbc_input(self, config):
-        self.validate()
-
         # Creates SQL-select query
         # Important for keeping the correct placement / index
         columns = ", ".join(self.op.columnNames)
@@ -136,3 +120,60 @@ class OperatorMapper:
                 "columnNames": self.op.columnNames
             }
         }
+    
+    def textfile_output(self, config):
+
+        folder = config["output_folder"]
+
+        # Validate if folder path exists
+        if not os.path.isdir(folder):
+            print("[Warning] Folder path don't exists. Skipping output operation")
+            return None
+        
+        # Ensure correct folder format
+        folder = self._ensure_path_format(folder)
+
+        # Create .txt filename with current timestamp        
+        now = datetime.now()
+        timestamp = now.strftime("%Y%m%d_%H%M%S")
+        filename = f"output_{timestamp}.txt"
+
+        # Create path
+        path = folder + filename
+
+        return {
+            "id": self.op.id,
+            "cat": "output",
+            "input": self.op.input,
+            "output": [], # Note: If last always remember that output list should be empty but check up with Zoi
+            "operatorName": "textFileOutput",
+            "data": {"filename": path}
+        }
+
+    def _ensure_path_format(self, path):
+        """
+        Wayang needs to havde specifically formatted paths
+        This method ensures that
+        """
+        # Remove spaces and use the absolute path
+        abs_path = os.path.abspath(path.strip())
+
+        # URl encode spaces and special characters
+        abs_path = urllib.parse.quote(abs_path)
+
+        # Add "file:///" if not exists
+        if not abs_path.startswith("file:///"):
+            abs_path = abs_path.lstrip("/") # Remove the first /
+            abs_path = "file:///" + abs_path
+
+        # Adds / in the end
+        if not abs_path.endswith("/"):
+            abs_path = abs_path + "/"
+
+        return abs_path
+        
+
+
+
+
+

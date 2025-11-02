@@ -23,12 +23,19 @@ DEBUGGER_MODEL_CONFIG = {
     "max_itr": os.getenv("MAX_ITERATIONS", 5)
 }
 
-# JDBC settings
-JDBC_CONFIG = {
+# Input settings
+INPUT_CONFIG = {
     "jdbc_uri": os.getenv("JDBC_URI", "jdbc:postgresql://localhost:5432/master_thesis_db"),
     "jdbc_username": os.getenv("JDBC_USERNAME", "master_thesis"),
     "jdbc_password": os.getenv("JDBC_PASSWORD", "master"),
+    "input_folder": os.getenv("INPUT_FOLDER", None)
 }
+
+OUTPUT_CONFIG = {
+    "output_folder": os.getenv("OUTPUT_FOLDER", None)
+}
+
+# Output settings
 
 # Log settings
 LOG_CONFIG = {

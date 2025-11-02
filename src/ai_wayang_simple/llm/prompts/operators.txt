@@ -121,6 +121,25 @@ An unary operator always have a single input and a single output
 
 ---
 
+
+## 4. Output Operators
+
+An output operator only have a sinlge input and zero output
+Only use output operators if explicity asked for it. Otherwise the last operation in the plan is automatically the output and have an empty []
+
+### **textFileOutput**
+- **Description:** Return data in a textfile or .txt file
+- **Use when:** You are asked to output the plan in a textfile or .txt file  
+- **Fields:**  
+  - `cat`: `"output"`  
+  - `operationName`: `"textFileOutput"`  
+  - `id`: Unique ID of this operator  
+  - `input`: ID of the operator which data should be outputted in a textfile
+  
+
+---
+
+
 ### General Notes
 - Each operator must define a unique **id**.  
 - The **input** and **output** fields establish the execution flow between operators.  

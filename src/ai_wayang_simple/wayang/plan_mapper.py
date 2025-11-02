@@ -8,14 +8,20 @@ class PlanMapper:
         self.plan = self._new_plan()
 
         self.operator_map = {
-            "jdbcRemoteInput": lambda op: OperatorMapper(op).jdbc_input(self.config),
+            # Input operators
+            "jdbcRemoteInput": lambda op: OperatorMapper(op).jdbc_input(self.config["input_config"]),
+
+            # Unary operators
             "map": lambda op: OperatorMapper(op).map(),
             "flatMap": lambda op: OperatorMapper(op).flatmap(),
             "filter": lambda op: OperatorMapper(op).filter(),
             "reduce": lambda op: OperatorMapper(op).reduce(),
             "reduceBy": lambda op: OperatorMapper(op).reduceby(),
             "groupBy": lambda op: OperatorMapper(op).groupby(),
-            "sort": lambda op: OperatorMapper(op).sort()
+            "sort": lambda op: OperatorMapper(op).sort(),
+
+            # Output operators
+            "textFileOutput": lambda op: OperatorMapper(op).textfile_output(self.config["output_config"])
         }
     
     def _new_plan(self):
@@ -24,53 +30,49 @@ class PlanMapper:
             "operators": []
         }
     
-    def validate_plan(self, plan) -> bool:
+    def validate_plan(self, plan):
         """
-        Validates if a plan is correctly mapped
+        Validates if a plan is correctly mapped.
         """
-        try:
-            for i, operation in enumerate(plan["operators"]):
-                # Check unary operations
+        errors = []
+
+        for i, operation in enumerate(plan.get("operators", [])):
+            op_id = int(operation.get("id", -1))
+
+            try:
                 if operation.get("cat") == "unary":
-                    input = operation.get("input", [])
-                    output = operation.get("output", [])
-                    id = int(operation.get("id", -1))
+                    inputs = operation.get("input", [])
+                    outputs = operation.get("output", [])
 
                     # Input must have at least one id
-                    if len(input) < 1:
-                        print("[VALIDATON ERROR] Missing input operator")
-                        return False
+                    if len(inputs) < 1:
+                        errors.append(f"Operation id {op_id}: Missing input operator")
 
-                    # Output must have a least one id and not be the last operation
-                    if len(output) < 1 and i != len(plan["operators"]) - 1:
-                        # Temp, to test for last output
-                        if i == len(plan["operators"]) - 2:
-                            continue
-                        
-                        print("[VALIDATON ERROR] Missing output operator")
-                        return False
-                    
-                    # Input id's must be lower than the operation id itself
-                    for input_id in input:
-                        if input_id >= id:
-                            print("[VALIDATON ERROR] Input value higher than operation id")
-                            return False
+                    # Output must have at least one id and not be the last operation
+                    if len(outputs) < 1 and i != len(plan["operators"]) - 1:
+                        if i != len(plan["operators"]) - 2:
+                            errors.append(f"Operation id {op_id}: Missing output operator")
 
-                    # Output id's must be higher than the operation id itself
-                    for output_id in output:
-                        if output_id <= id:
-                            print("[VALIDATON ERROR] Output value lower than operation id")
-                            return False
-                    
+                    # Input ids must be lower than operation id
+                    for input_id in inputs:
+                        if input_id >= op_id:
+                            errors.append(f"Operation id {op_id}: Input id {input_id} ≥ operation id")
 
-            return True
+                    # Output ids must be higher than operation id
+                    for output_id in outputs:
+                        if output_id <= op_id:
+                            errors.append(f"Operation id {op_id}: Output id {output_id} ≤ operation id")
 
-        except Exception as e:
-            print(e)
-            return False
+            except Exception as e:
+                errors.append(f"Operation id {op_id}: Unexpected error - {e}")
+
+        if errors:
+            return False, errors
+        else:
+            return True, []
         
 
-    def map(self, plan_draft: WayangPlan, output_path: str):
+    def map(self, plan_draft: WayangPlan):
         """
         Converts WayangPlan til JSON Wayang plan (correct formatting)
         """
@@ -81,14 +83,13 @@ class PlanMapper:
 
         self._add_operators(operations)
 
-        self._add_text_output(output_path)
-
         return self.plan
         
 
     def _add_operators(self, operations: List[WayangOperation]):
         """
-        Adds and format wayang operators correctly
+        Adds and format wayang operators correctl
+
         """
         for op in operations:
             try:
@@ -107,7 +108,8 @@ class PlanMapper:
             except Exception as e:
                 print(f"[ERROR] Couldn't add operator {op}: {e}")
 
-    ######
+    ###### Temp
+    # This is temp
     "Just for testing untill built in operators"
     def _add_text_output(self, output_path: str) -> None:
         operator_count = len(self.plan["operators"])
@@ -119,6 +121,7 @@ class PlanMapper:
             "operatorName": "textFileOutput",
             "data": {"filename": output_path}
         })
+    #####
 
     def anonymize_plan(self, wayang_plan):
         """
@@ -137,11 +140,13 @@ class PlanMapper:
         """
         Redo anonymization of username and password in JDBC input. Mainly for debugger
         """
+        input_config = self.config["input_config"]
+
         for operation in anonymized_plan["operators"]:
             if operation.get("operatorName") == "jdbcRemoteInput":
                 data = operation.get("data", {})
-                data["username"] = self.config["jdbc_username"]
-                data["password"] = self.config["jdbc_password"]
+                data["username"] = input_config["jdbc_username"]
+                data["password"] = input_config["jdbc_password"]
                 operation["data"] = data
 
         return anonymized_plan

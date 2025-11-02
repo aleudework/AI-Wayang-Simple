@@ -24,7 +24,7 @@ class Debugger:
         """
         return self.version
 
-    def debug_plan(self, failed_plan, error):
+    def debug_plan(self, failed_plan, wayang_errors, val_errors):
         """
         Debug a failed plan from an error message
         """
@@ -33,7 +33,7 @@ class Debugger:
         self.version += 1
 
         # Create new user prompt
-        prompt = PromptLoader().load_debugger_prompt_template(failed_plan, error)
+        prompt = PromptLoader().load_debugger_prompt_template(failed_plan, wayang_errors, val_errors)
 
         # Add user prompt to chat
         self.chat.append({"role": "user", "content": prompt})

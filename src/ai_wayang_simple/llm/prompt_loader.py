@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+from typing import List
 
 class PromptLoader:
     """
@@ -33,7 +34,7 @@ class PromptLoader:
         # Get and return system prompt
         return self._read_file("debugger_system_prompt.txt")
     
-    def load_debugger_prompt_template(self, failed_plan: str, error: str) -> str:
+    def load_debugger_prompt_template(self, failed_plan: str, wayang_errors: str, val_errors: List) -> str:
         """
         Output a new message for the debugger agent to handle on
         """
@@ -46,12 +47,16 @@ class PromptLoader:
             failed_plan = json.dumps(failed_plan, indent=4)
 
         # Convert to JSON
-        if not isinstance(error, str):
-            error = json.dumps(error, indent=4)
+        if not isinstance(wayang_errors, str):
+            wayang_errors = json.dumps(wayang_errors, indent=4)
+
+        # Converts val error to string
+        val_errors = "\n".join([f"- {str(e)}" for e in val_errors])
 
         # Fill template
         prompt_template = prompt_template.replace("{failed_plan}", failed_plan)
-        prompt_template = prompt_template.replace("{error}", error)
+        prompt_template = prompt_template.replace("{wayang_errors}", wayang_errors)
+        prompt_template = prompt_template.replace("{val_errors}", val_errors)
 
         return prompt_template
     

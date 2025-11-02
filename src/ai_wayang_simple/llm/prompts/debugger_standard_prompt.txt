@@ -2,8 +2,12 @@ This is the Wayang JSON plan to fix:
 
 {failed_plan}
 
-This is the error from the server
+If error comes from Wayang server, this is the error message:
 
-{error}
+{wayang_error}
+
+If error is an validation error, this is the validation errors:
+
+{val_errors}
 
 Return ONLY in JSON and nothing else
