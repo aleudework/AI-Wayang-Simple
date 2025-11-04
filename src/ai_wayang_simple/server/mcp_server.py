@@ -1,3 +1,4 @@
+# Import libraries
 from mcp.server.fastmcp import FastMCP
 from ai_wayang_simple.config.settings import MCP_CONFIG, INPUT_CONFIG, OUTPUT_CONFIG, DEBUGGER_MODEL_CONFIG
 from ai_wayang_simple.llm.agent_builder import Builder
@@ -9,7 +10,8 @@ from ai_wayang_simple.utils.logger import Logger
 from datetime import datetime
 
 # Initialize MCP-server
-mcp = FastMCP(name="AI-Wayang-Simple", port=MCP_CONFIG.get("port"))
+mcp = FastMCP(name="AI-Wayang-Simple", 
+              port=MCP_CONFIG.get("port"))
 
 # Initialize configs
 config = {
@@ -24,17 +26,30 @@ plan_mapper = PlanMapper(config=config) # Initialize mapper
 plan_validator = PlanValidator() # Initialize validator
 wayang_executor = WayangExecutor() # Wayang executor
 
-# Temp to test output
-temp_out = "Nothing to output"
+# To store the last sessions output
+last_session_result = "Nothing to output"
 
 @mcp.tool()
 def query_wayang(describe_wayang_plan: str) -> str:
     """
-    Ask in English and describe the plan as detailed as possible.
-    The function generates a wayang plan and executes it based on natural language in English
+    Generates and execute a Wayang plan based on given query in national language.
+    The query provided must be in Englis
+
+    Args:
+        describe_wayang_plan (str):
+            A detailed description in English of what query or task should be executed
+    
+    Returns:
+        Execution output from Wayang server
+    
+    Notes:
+    - This tool builds and execute a query based on a description 
+    - Runetime is typically a few minutes
+    - Be as detailed in the description as possible
     """
 
-    global temp_out # temp
+    # Declaring variable as global
+    global last_session_result
 
     try:
         # Set up logger 
@@ -42,9 +57,9 @@ def query_wayang(describe_wayang_plan: str) -> str:
         logger.add_message("Plan description from client LLM", describe_wayang_plan)
         
         # Initialize variables
-        status_code = None
-        result = None
-        version = 1
+        status_code = None # Status code from validator or Wayang server
+        result = None # Variable to store output
+        version = 1 # Keeping track of plan version for this session
 
 
         ### --- Generate Wayang Plan Draft --- ###
@@ -54,7 +69,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
         response = builder_agent.generate_plan(describe_wayang_plan)
         raw_plan = response.get("wayang_plan")
 
-        # Logs
+        # Logging
         print("[INFO] Draft generated")
         logger.add_message("Builder Agent information", {"model": str(response["raw"].model), "usage": response["raw"].usage.model_dump()})
         logger.add_message("Builder Agent's abstract/raw plan", raw_plan.model_dump())
@@ -66,7 +81,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
         print("[INFO] Mapping plan")
         wayang_plan = plan_mapper.plan_to_json(raw_plan)
 
-        # Logs
+        # Logging
         print("[INFO] Plan mapped")
         logger.add_message("Mapped plan finalized for execution", {"version": 1, "plan": wayang_plan})
 
@@ -81,6 +96,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
             print("[INFO] Plan validated sucessfully")
 
         else:
+            # Logging if validation fails
             print(f"[INFO] Plan {version} failed validation: {val_errors}")
             logger.add_message(f"Failed validation", {"version": version, "errors": val_errors})
             status_code = 400
@@ -118,7 +134,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
             # Debug and execute plan up to max iterations
             for _ in range(max_itr):
 
-                # Map and anonymize plan from JSON to raw
+                # Map and anonymize plan from executable json to raw format
                 failed_plan = plan_mapper.plan_from_json(wayang_plan)
 
                 # Debug plan
@@ -132,7 +148,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
                 # Get current plan version
                 version = debugger_agent.get_version()
 
-                # Logs
+                # Logging
                 logger.add_message(f"Debug version {version}", {"model": str(response["raw"].model), "usage": response["raw"].usage.model_dump()})
                 logger.add_message(f"Debugged plan: {version}", {"version": version, "plan": wayang_plan})
 
@@ -141,6 +157,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
 
                 # If plan failed validation, continue debugging
                 if not val_success:
+                    # Logging failure
                     print(f"[INFO] Plan {version} failed validation: {val_errors}")
                     logger.add_message(f"Failed validation", {"version": version, "errors": val_errors})
                     status_code = 400
@@ -181,7 +198,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
             return "Couldn't execute wayang plan succesfully"
 
     except Exception as e:
-
+        # Prints if an exception happened
         print(f"[ERROR] {e}")
 
         # Return error to client LLM to explain to user
@@ -192,29 +209,23 @@ def query_wayang(describe_wayang_plan: str) -> str:
 
 
 @mcp.tool()
-def get_output() -> str:
+def get_wayang_result() -> str:
     """
-    Return output of executed wayang plan
-    """
-    return temp_out
+    Get the current result from query_wayang or from the Wayang execution.
 
-# To test
+    Returns:
+        The output result or output error from Wayang
+    
+    """
+
+    return last_session_result
+
+# Test MCP
 @mcp.tool()
 def greeto(name: str) -> str:
     return f"Hello:)), {name}!"
-
 
 # Implement few-shot prompting
 # Implement joins oepraiton
 # Implement multiple output operations (not sure)
 # Add More data 
-
-# DEBUGGER fixes:
-# 1) In Plan_Mapper. Make a function that re-do plans to WayangOperation model (obs on JDBC)
-# 2) For debugger. Add the original not-working plan as well as the one it should fix
-# 3) Make the debugger only do structured output as before
-# 4) Make the new plan go through the mapper again and
-# Validation class PlanValidator ?? 
-
-# Maybe not necessary anymore with anonymization (will be remapped)
-# Re-do the Debugger as it nows need to have operation part in its system prompt

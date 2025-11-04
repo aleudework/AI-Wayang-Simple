@@ -1,5 +1,5 @@
 """
-Models for structured formatted output
+Models to ensure structured format in agents
 """
 
 from pydantic import BaseModel, Field

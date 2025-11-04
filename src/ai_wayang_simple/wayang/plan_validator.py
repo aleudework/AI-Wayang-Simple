@@ -1,17 +1,26 @@
 class PlanValidator:
+    """
+    Validates Wayang plans
+    """
 
     def validate_plan(self, plan):
         """
-        Validates if a plan is correctly mapped.
+        Validates a JSON Wayang Plan to verify it is executable in Wayang server
+
         """
-
+        
+        # List for errors found
         errors = []
-
+        
+        # Go over each operation
         for i, operation in enumerate(plan.get("operators", [])):
+            # Get operation ID
             op_id = int(operation.get("id", -1))
-
+            
             try:
+                # For unary operatoes
                 if operation.get("cat") == "unary":
+                    # Get input and output parameters
                     inputs = operation.get("input", [])
                     outputs = operation.get("output", [])
 
@@ -37,7 +46,9 @@ class PlanValidator:
             except Exception as e:
                 errors.append(f"Operation id {op_id}: Unexpected error - {e}")
 
+        # If any errors, return false and the erros
         if errors:
             return False, errors
+        # Else return true and an empty error list
         else:
             return True, []

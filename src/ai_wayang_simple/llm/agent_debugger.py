@@ -1,14 +1,17 @@
 from openai import OpenAI
 import re
 import json
-
+from typing import List
 from ai_wayang_simple.config.settings import DEBUGGER_MODEL_CONFIG
 from ai_wayang_simple.llm.prompt_loader import PromptLoader
 from ai_wayang_simple.llm.models import WayangPlan
 
+
 class Debugger:
     """
-    OpenAI LLM client as debugger
+    Debugger Agent based on OpenAI's GPT-models.
+    The agent takes a failed Wayang plan and tries to fix it. Returns a fixed plan.
+
     """
 
     def __init__(self, model: str | None = None, system_prompt: str | None = None, version: int | None = None):
@@ -21,22 +24,45 @@ class Debugger:
     
     def get_version(self) -> int:
         """
-        Getter to get plan version / iteration
+        Get the iteration of the plan
+
+        Returns:
+            int: Plan version
+
         """
 
         return self.version
     
     def set_vesion(self, version: int) -> int:
         """
-        Set the plan version / iteration
+        Set the plan iteration or version
+
+        Args:
+            version (int): Plan version
+        
+        Returns:
+            int: Plan version
+
         """ 
         
+        # Sets plan version
         self.version = version
+
         return self.get_version()
 
-    def debug_plan(self, plan: WayangPlan, wayang_errors, val_errors):
+
+    def debug_plan(self, plan: WayangPlan, wayang_errors: str, val_errors: List):
         """
-        Debug a failed plan from an error message
+        Debug a failed plan and tries to return. a new one
+
+        Args:
+            plan (WayangPlan): The failed Wayang plan for debugging
+            wayang_errors (str): The error given by the Wayang server if any
+            val_errors (List): The error given by the PlanValidator if any
+
+        Returns:
+            A fixed plan
+        
         """
 
         # increment version
@@ -77,47 +103,11 @@ class Debugger:
             "version": self.version
         }
     
+
     def start_debugger(self) -> None:
         """
-        Initialize a new debugger session.
-        Removes previous chats from previous debugger sessions
+        Cleans the Debugger Agents chat so it only includes the system prompt
+
         """
 
         self.chat = [{"role": "system", "content": self.system_prompt}]
-
-    
-    ### Temp, to be deleted after refactoring
-    ########
-    def _extract_json(self, text):
-        """
-        Helper to extract text-output from model and ensure it is json
-        """
-
-        # Check if output is text
-        if not text:
-            self.chat.append({"role": "assistant", "content": text})
-            self.chat.append({"role": "user", "content": "You should only output in JSON"})
-            print(f"[INFO] Debugger's output at itr {self.version} is not text")
-            return None
-        
-        # Look for json in output
-        match = re.search(r"(\{.*\}|\[.*\])", text, re.DOTALL) # DOTALL goes through all lines (and not just a single line)
-
-        # Check output has a match
-        if not match:
-            self.chat.append({"role": "assistant", "content": text})
-            self.chat.append({"role": "user", "content": "You haven't outputted JSON correctly"})
-            print(f"[INFO] Debugger's output at itr {self.version} is not JSON")
-            return None
-        
-        # Get first JSON match
-        json_str = match.group(1)
-
-        # Parse JSON
-        try:
-            json_plan = json.loads(json_str)
-            self.chat.append({"role": "assistant", "content": json.dumps(json_plan, indent=2)})
-            return json_plan
-        except Exception as e:
-            print(f"[ERROR] Couldn't load in JSON, error: {e}")
-            return None

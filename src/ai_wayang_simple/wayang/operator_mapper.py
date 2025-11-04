@@ -3,106 +3,17 @@ import os
 import urllib.parse
 
 class OperatorMapper:
+    """
+    Maps operators in Wayang plan to be executable
+    """
+
     def __init__(self, operation):
         self.op = operation
-
-    def map(self):
-
-        return {
-            "id": self.op.id,
-            "cat": "unary",
-            "input": self.op.input,
-            "output": self.op.output,
-            "operatorName": "map",
-            "data": {
-                "udf": self.op.udf
-            }
-        }
-
-    def flatmap(self):
-
-        return {
-            "id": self.op.id,
-            "cat": "unary",
-            "input": self.op.input,
-            "output": self.op.output,
-            "operatorName": "flatMap",
-            "data": {
-                "udf": self.op.udf
-            }
-        }
     
-    def filter(self):
-
-        return {
-            "id": self.op.id,
-            "cat": "unary",
-            "input": self.op.input,
-            "output": self.op.output,
-            "operatorName": "filter",
-            "data": {
-                "udf": self.op.udf
-            }
-        }
-    
-    def reduce(self):
-        # Reduce may always need a keyUDF
-
-        return {
-            "id": self.op.id,
-            "cat": "unary",
-            "input": self.op.input,
-            "output": self.op.output,
-            "operatorName": "reduce",
-            "data": {
-                "keyUdf": "(_ : Any) => 1",
-                "udf": self.op.udf
-            }
-        }
-
-    def reduceby(self):
-
-        return {
-            "id": self.op.id,
-            "cat": "unary",
-            "input": self.op.input,
-            "output": self.op.output,
-            "operatorName": "reduceBy",
-            "data": {
-                "keyUdf": self.op.keyUdf,
-                "udf": self.op.udf
-            }
-        }
-
-    def groupby(self):
-
-        return {
-            "id": self.op.id,
-            "cat": "unary",
-            "input": self.op.input,
-            "output": self.op.output,
-            "operatorName": "groupBy",
-            "data": {
-                "keyUdf": self.op.keyUdf
-            }
-        }
-
-    def sort(self):
-
-        return {
-            "id": self.op.id,
-            "cat": "unary",
-            "input": self.op.input,
-            "output": self.op.output,
-            "operatorName": "sort",
-            "data": {
-                "keyUdf": self.op.keyUdf
-            }
-        }
-    
+    # Input operators
     def jdbc_input(self, config):
-        # Creates SQL-select query
-        # Important for keeping the correct placement / index
+        
+        # Get only relevant queries
         columns = ", ".join(self.op.columnNames)
         table_query = f"(SELECT {columns} FROM {self.op.table}) as X"
 
@@ -121,8 +32,98 @@ class OperatorMapper:
             }
         }
     
+    # Unary operators
+    def map(self):
+        return {
+            "id": self.op.id,
+            "cat": "unary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "map",
+            "data": {
+                "udf": self.op.udf
+            }
+        }
+
+    def flatmap(self):
+        return {
+            "id": self.op.id,
+            "cat": "unary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "flatMap",
+            "data": {
+                "udf": self.op.udf
+            }
+        }
+    
+    def filter(self):
+        return {
+            "id": self.op.id,
+            "cat": "unary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "filter",
+            "data": {
+                "udf": self.op.udf
+            }
+        }
+    
+    def reduce(self):
+        return {
+            "id": self.op.id,
+            "cat": "unary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "reduce",
+            "data": {
+                "keyUdf": "(_ : Any) => 1",
+                "udf": self.op.udf
+            }
+        }
+
+    def reduceby(self):
+        return {
+            "id": self.op.id,
+            "cat": "unary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "reduceBy",
+            "data": {
+                "keyUdf": self.op.keyUdf,
+                "udf": self.op.udf
+            }
+        }
+
+    def groupby(self):
+        return {
+            "id": self.op.id,
+            "cat": "unary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "groupBy",
+            "data": {
+                "keyUdf": self.op.keyUdf
+            }
+        }
+
+    def sort(self):
+        return {
+            "id": self.op.id,
+            "cat": "unary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "sort",
+            "data": {
+                "keyUdf": self.op.keyUdf
+            }
+        }
+
+    # Output operators
+    
     def textfile_output(self, config):
 
+        # Get folder output
         folder = config["output_folder"]
 
         # Validate if folder path exists
@@ -138,22 +139,28 @@ class OperatorMapper:
         timestamp = now.strftime("%Y%m%d_%H%M%S")
         filename = f"output_{timestamp}.txt"
 
-        # Create path
+        # Create path for output file
         path = folder + filename
 
         return {
             "id": self.op.id,
             "cat": "output",
             "input": self.op.input,
-            "output": [], # Note: If last always remember that output list should be empty but check up with Zoi
+            "output": [],
             "operatorName": "textFileOutput",
             "data": {"filename": path}
         }
 
     def _ensure_path_format(self, path):
         """
-        Wayang needs to havde specifically formatted paths
-        This method ensures that
+        Helper function to ensure filepath is correctly formatted for Wayang (e.g. file:///)
+
+        Args:
+            path (str): Takes a filepath
+        
+        Returns:
+            str: A filepath suitable for Wayang
+
         """
         # Remove spaces and use the absolute path
         abs_path = os.path.abspath(path.strip())

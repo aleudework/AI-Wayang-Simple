@@ -1,3 +1,4 @@
+# Import libraries
 import os
 from dotenv import load_dotenv
 
@@ -31,17 +32,17 @@ INPUT_CONFIG = {
     "input_folder": os.getenv("INPUT_FOLDER", None)
 }
 
+# Output settings
 OUTPUT_CONFIG = {
     "output_folder": os.getenv("OUTPUT_FOLDER", None)
 }
-
-# Output settings
 
 # Log settings
 LOG_CONFIG = {
     "log_folder": os.getenv("LOG_FOLDER", None)
 }
 
+# Wayang server settings
 WAYANG_CONFIG = {
     "server_url": os.getenv("WAYANG_URL")
 }

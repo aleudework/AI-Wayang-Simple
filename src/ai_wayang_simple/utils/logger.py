@@ -5,39 +5,24 @@ import json
 
 class Logger:
     """
-    Logger to debug and inspect the agentic architecture
+    For logging, inspecting and debugging plans.
+    Mostly to keep track and monitor on Agents progress
+
     """
 
     def __init__(self):
         self.folder_path = LOG_CONFIG.get("log_folder")
         self.logfile = self._create_logfile() or None
-    
-    def _create_logfile(self):
-        """
-        Helper that initialize log json file
-        """
 
-        # Check if folder exists
-        if not self.folder_path:
-            return None
-        
-        # Check or create log folder if doesn't exist
-        os.makedirs(self.folder_path, exist_ok=True)
 
-        # Create path for log file
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"log_{timestamp}.json"
-        filepath = os.path.join(self.folder_path, filename)
-
-        # Create file
-        with open(filepath, "w", encoding="utf-8", ) as f:
-            json.dump([], f, indent=4)
-            
-        return filepath
-    
     def add_message(self, title: str, msg):
         """
-        Append a message to the log
+        Append a new log or message to the logfile
+
+        Args:
+            title (str): The title of the message to be logged
+            msg (str): The message to log
+
         """
 
         # Return if no folder path
@@ -70,6 +55,34 @@ class Logger:
             # (Over)write the log
             json.dump(logs, f, indent=4)
             
+
+    def _create_logfile(self) -> str:
+        """
+        Helper function to create a new log file in JSON
+
+        Returns:
+            (str): Filepath of created log file
+
+        """
+
+        # Check if folder exists
+        if not self.folder_path:
+            return None
+        
+        # Check or create log folder if doesn't exist
+        os.makedirs(self.folder_path, exist_ok=True)
+
+        # Create path for log file
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"log_{timestamp}.json"
+        filepath = os.path.join(self.folder_path, filename)
+
+        # Create file
+        with open(filepath, "w", encoding="utf-8", ) as f:
+            json.dump([], f, indent=4)
+            
+        return filepath
+    
             
 
 

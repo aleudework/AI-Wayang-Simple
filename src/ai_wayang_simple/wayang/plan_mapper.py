@@ -4,6 +4,12 @@ from typing import List
 import json
 
 class PlanMapper:
+    """
+    Maps a logical, abstract Wayang plan to executable JSON Wayang plan.
+    Can also simplify a JSON Wayang plan to a more abstract version
+
+    """
+
     def __init__(self, config):
         self.config = config
 
@@ -27,27 +33,48 @@ class PlanMapper:
 
     def plan_to_json(self, plan: WayangPlan):
         """
-        Converts WayangPlan til JSON Wayang plan (correct formatting)
-        """
-        if not isinstance(plan, WayangPlan):
-            raise ValueError("Plan draft must be a wayang plan")
+        Maps abstract Wayang plan to a executable JSON Wayang plan
+
+        Args:
+            plan (WayangPlan): Abstract WayangPlan
         
+        Returns:
+            json: Executable JSON plan
+
+        """
+
+        # Check if input plan is a WayangPlan model
+        if not isinstance(plan, WayangPlan):
+            raise ValueError("Abstract, raw plan must be in WayangPlan format")
+        
+        # Initialize a new JSON plan
         mapped_plan = self._new_plan()
 
+        # Filter operators in abstract plan
         operations = plan.operations
 
+        # Map operators
         mapped_operators = self._map_operators(operations)
 
+        # Add operators to JSON plan
         mapped_plan["operators"] = mapped_operators
 
+        # Return JSON plan
         return mapped_plan
     
 
-    def plan_from_json(self, plan) -> WayangPlan:
+    def plan_from_json(self, plan: str) -> WayangPlan:
         """
-        Converts a JSON Wayang plan to WayangPlan.
-        Used for LLM Debugger to fix a failed plan
+        Converts a JSON Wayang plan to a more simple, abstract WayangPlan easier for modification.
+        
+        Args:
+            plan (str): Plan in JSON to be converted
+        
+        Returns:
+            Plan in WayangPlan format
+
         """
+
         try:
             # Make sure plan is a dict (from json)
             if isinstance(plan, str):
@@ -66,44 +93,64 @@ class PlanMapper:
                 operations.append(WayangOperation(**op_data))
             
             # Add to Wayang plan and return
-            return WayangPlan(operations=operations, description_of_plan="Plan from JSON")
+            return WayangPlan(operations=operations, thoughts="Plan converted from JSON")
 
         except Exception as e:
             raise ValueError("[Error] Not a correctly formatted JSON-plan")
 
 
     def _new_plan(self):
+        """
+        Initialize a new JSON Wayang plan
+        
+        Returns:
+            str: JSON Wayang plan
+
+        """
+
         return {
             "context": { "platforms": ["java"], "configuration": {} },
             "operators": []
         }
 
 
-    def _map_operators(self, operations: List[WayangOperation]):
+    def _map_operators(self, operations: List[WayangOperation]) -> List:
         """
-        Adds and format wayang operators correctl
+        Maps operators from abstract form to executable form
+
+        Args:
+            operations (List[WayangOperation]): List of operations to be mapped
+        
+        Returns:
+            List: List of operations mapped
 
         """
 
+        # Intialize mapped operations list
         mapped_operations = []
         
+        # Iterate over each operation
         for op in operations:
             try:
+                # Get operation name
                 name = op.operatorName
 
-                # If an operator is mentioned in the map then skip
+                # Skip operator not supported in the architecture
                 if name not in self.operator_map:
                     print(f"[WARNING] Couldn't find or map operator")
                     continue
-
+                
+                # Map oeprator
                 operation = self.operator_map[name](op)
 
+                # Add mapped operator
                 if operation:
                     mapped_operations.append(operation)
             
             except Exception as e:
                 print(f"[ERROR] Couldn't add operator {op}: {e}")
         
+        # Returned list of mapped operators
         return mapped_operations
 
     
