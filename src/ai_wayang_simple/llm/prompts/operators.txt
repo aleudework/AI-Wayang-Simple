@@ -22,7 +22,7 @@ An input operator always have zero input but one to more outputs
 - **Use when:** You need to load data from a relational database into the Wayang pipeline.  
 - **Fields:**  
   - `cat`: `"input"`  
-  - `operationName`: `"jdbcRemoteInput"`  
+  - `operatorName`: `"jdbcRemoteInput"`  
   - `table`: Name of the table to read from  
   - `columnNames`: List of columns to read  
   - `id`: Unique ID of this operator  
@@ -44,7 +44,7 @@ An unary operator always have a single input and a single output
 - **Use when:** You need to transform data element-wise, e.g. compute new values or change structure.  
 - **Fields:**
   - `cat`: `"unary"`  
-  - `operationName`: `"map"`  
+  - `operatorName`: `"map"`  
   - `UDF`: Scala lambda function applied to each element  
   - `id`, `input`, `output`
 
@@ -55,7 +55,7 @@ An unary operator always have a single input and a single output
 - **Use when:** Expanding or exploding data, e.g. splitting lists or strings.  
 - **Fields:**  
   - `cat`: `"unary"`  
-  - `operationName`: `"flatMap"`  
+  - `operatorName`: `"flatMap"`  
   - `UDF`: Scala lambda function returning a list or sequence  
   - `id`, `input`, `output`
 
@@ -66,7 +66,7 @@ An unary operator always have a single input and a single output
 - **Use when:** Removing unwanted elements.  
 - **Fields:**  
   - `cat`: `"unary"`  
-  - `operationName`: `"filter"`  
+  - `operatorName`: `"filter"`  
   - `UDF`: Scala lambda predicate function returning Boolean  
   - `id`, `input`, `output`
 
@@ -77,7 +77,7 @@ An unary operator always have a single input and a single output
 - **Use when:** Producing a single aggregated result (e.g. sum, max).  
 - **Fields:**  
   - `cat`: `"unary"`  
-  - `operationName`: `"reduce"`  
+  - `operatorName`: `"reduce"`  
   - `UDF`: Scala binary reduction function  
   - `id`, `input`, `output`
 
@@ -88,7 +88,7 @@ An unary operator always have a single input and a single output
 - **Use when:** You need grouped aggregation (e.g. sum by category).  
 - **Fields:**  
   - `cat`: `"unary"`  
-  - `operationName`: `"reduceBy"`  
+  - `operatorName`: `"reduceBy"`  
   - `KeyUDF`: Scala key extraction function  
   - `UDF`: Scala lambda reduction function per group  
   - `id`, `input`, `output`
@@ -100,7 +100,7 @@ An unary operator always have a single input and a single output
 - **Use when:** Clustering elements before further processing.  
 - **Fields:**  
   - `cat`: `"unary"`  
-  - `operationName`: `"groupBy"`  
+  - `operatorName`: `"groupBy"`  
   - `KeyUDF`: Scala key extraction function  
   - `id`, `input`, `output`
 
@@ -111,7 +111,7 @@ An unary operator always have a single input and a single output
 - **Use when:** Sorting data by key or value.  
 - **Fields:**  
   - `cat`: `"unary"`  
-  - `operationName`: `"sort"`  
+  - `operatorName`: `"sort"`  
   - `UDF`: Scala key function used for ordering  
   - `id`, `input`, `output`
 
@@ -132,7 +132,7 @@ Only use output operators if explicity asked for it. Otherwise the last operatio
 - **Use when:** You are asked to output the plan in a textfile or .txt file  
 - **Fields:**  
   - `cat`: `"output"`  
-  - `operationName`: `"textFileOutput"`  
+  - `operatorName`: `"textFileOutput"`  
   - `id`: Unique ID of this operator  
   - `input`: ID of the operator which data should be outputted in a textfile
   

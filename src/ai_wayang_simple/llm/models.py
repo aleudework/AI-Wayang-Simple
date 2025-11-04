@@ -10,7 +10,7 @@ class WayangOperation(BaseModel):
     id: int
     input: List[int] = Field(default_factory=list)
     output: List[int] = Field(default_factory=list)
-    operationName: str
+    operatorName: str
     keyUdf: Optional[str] = None
     udf: Optional[str] = None
     table: Optional[str] = None

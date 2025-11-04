@@ -1,6 +1,7 @@
 from ai_wayang_simple.llm.models import WayangOperation, WayangPlan
 from ai_wayang_simple.wayang.operator_mapper import OperatorMapper
 from typing import List
+import json
 
 class PlanMapper:
     def __init__(self, config):
@@ -30,18 +31,67 @@ class PlanMapper:
             "operators": []
         }
         
-    def map(self, plan_draft: WayangPlan):
+    def map(self, plan: WayangPlan):
         """
         Converts WayangPlan til JSON Wayang plan (correct formatting)
         """
-        if not isinstance(plan_draft, WayangPlan):
+        if not isinstance(plan, WayangPlan):
             raise ValueError("Plan draft must be a wayang plan")
         
-        operations = plan_draft.operations
+        operations = plan.operations
 
         self._add_operators(operations)
 
         return self.plan
+    
+    def plan_to_json(self, plan: WayangPlan):
+        """
+        Converts WayangPlan til JSON Wayang plan (correct formatting)
+        """
+        if not isinstance(plan, WayangPlan):
+            raise ValueError("Plan draft must be a wayang plan")
+        
+        operations = plan.operations
+
+        self._add_operators(operations)
+
+        return self.plan
+    
+    def _flat_json(data: dict) -> WayangOperation:
+        # Flats
+        flat = {**data, **data.get("data", {})}
+        filtered = {k: v for k, v in flat.items() if k in WayangOperation.model_fields}
+        return WayangOperation(**filtered)
+    
+
+    def plan_from_json(self, plan) -> WayangPlan:
+        """
+        Converts a JSON Wayang plan to WayangPlan.
+        Used for LLM Debugger to fix a failed plan
+        """
+        try:
+            # Make sure plan is a dict (from json)
+            if isinstance(plan, str):
+                plan = json.loads(plan)
+
+            # List to store operations
+            operations = []
+
+            # Maps each operation to WayangOperation model
+            for op in plan["operators"]:
+                # Flat nested structure (if called data)
+                flat_op_data = {**op, **op.get("data", {})}
+                # Filter to only relevant keys in WayangOperations
+                op_data = {k: v for k, v in flat_op_data.items() if k in WayangOperation.model_fields}
+                # Append to the operation list
+                operations.append(WayangOperation(**op_data))
+            
+            # Add to Wayang plan and return
+            return WayangPlan(operations=operations, description_of_plan="Plan from JSON")
+
+        except Exception as e:
+            raise ValueError("[Error] Not a correctly formatted JSON-plan")
+
 
     def anonymize_plan(self, wayang_plan):
         """
@@ -79,7 +129,7 @@ class PlanMapper:
         """
         for op in operations:
             try:
-                name = op.operationName
+                name = op.operatorName
 
                 # If an operator is mentioned in the map then skip
                 if name not in self.operator_map:
