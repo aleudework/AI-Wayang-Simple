@@ -3,6 +3,7 @@ from ai_wayang_simple.config.settings import MCP_CONFIG, INPUT_CONFIG, OUTPUT_CO
 from ai_wayang_simple.llm.agent_builder import Builder
 from ai_wayang_simple.llm.agent_debugger import Debugger
 from ai_wayang_simple.wayang.plan_mapper import PlanMapper
+from ai_wayang_simple.wayang.plan_validator import PlanValidator
 from ai_wayang_simple.wayang.wayang_executor import WayangExecutor
 from ai_wayang_simple.utils.logger import Logger
 from datetime import datetime
@@ -58,7 +59,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
         logger.add_message("Mapped plan finalized for execution", {"version": 1, "plan": wayang_plan})
 
         # Validate plan before execution
-        val_bool, val_errors = plan_mapper.validate_plan(wayang_plan)
+        val_bool, val_errors = PlanValidator().validate_plan(wayang_plan)
 
         if val_bool:
 
@@ -125,7 +126,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
                 wayang_plan = plan_mapper.unanonymize_plan(wayang_plan)
 
                 # Validate plan
-                val_bool, val_errors = plan_mapper.validate_plan(wayang_plan)
+                val_bool, val_errors = PlanValidator().validate_plan(wayang_plan)
 
                 # If validation fails
                 if not val_bool:
