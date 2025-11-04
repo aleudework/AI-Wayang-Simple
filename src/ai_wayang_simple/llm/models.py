@@ -18,4 +18,4 @@ class WayangOperation(BaseModel):
 
 class WayangPlan(BaseModel):
     operations: List[WayangOperation]
-    description_of_plan: str
+    thoughts: str

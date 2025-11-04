@@ -63,16 +63,17 @@ class Debugger:
         # Generate response
         response = self.client.responses.parse(**params)
 
-        # Extract output from response
-        #plan_text = response.output_text
-        
-        # Format output to json
-        #plan_json = self._extract_json(plan_text)
+        # Format text answer from agent
+        wayang_plan = response.output_parsed
+        answer = PromptLoader().load_debugger_answer_template(wayang_plan)
+
+        # Add agent answer to chat - necessary if another debug iteration is needed
+        self.chat.append({"role": "assistant", "content": answer})
 
         # Return output
         return {
             "raw": response,
-            "wayang_plan": response.output_parsed,
+            "wayang_plan": wayang_plan,
             "version": self.version
         }
     

@@ -44,6 +44,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
         # Initialize variables
         status_code = None
         result = None
+        version = 1
 
 
         ### --- Generate Wayang Plan Draft --- ###
@@ -111,7 +112,8 @@ def query_wayang(describe_wayang_plan: str) -> str:
 
             # Set debugging parameters
             max_itr = int(DEBUGGER_MODEL_CONFIG.get("max_itr")) # Get max iterations for debugging
-            debugger_agent.set_vesion(1) # Set version to number of plans already created this session
+            debugger_agent.set_vesion(version) # Set version to number of plans already created this session
+            debugger_agent.start_debugger() # Load debugger session 
 
             # Debug and execute plan up to max iterations
             for _ in range(max_itr):
@@ -161,10 +163,6 @@ def query_wayang(describe_wayang_plan: str) -> str:
                     logger.add_message(f"Plan version {version} executed unsucessful", {"status_code": status_code, "output": result})
                     continue
             
-            # Logs
-            print(f"[INFO] Debugger reached max iteration at {max_itr}")
-            logger.add_message("Debugger reached limit", f"The debug loop reached max iterations at {max_itr}")
-
         # Return output when success
         if status_code == 200:
             print("[INFO] Plan succesfully executed")

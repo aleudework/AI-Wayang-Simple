@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 from typing import List
+from ai_wayang_simple.llm.models import WayangPlan
 
 class PromptLoader:
     """
@@ -42,7 +43,7 @@ class PromptLoader:
         # Get and return system prompt
         return system_prompt
     
-    def load_debugger_prompt_template(self, failed_plan: str, wayang_errors: str, val_errors: List) -> str:
+    def load_debugger_prompt_template(self, failed_plan: WayangPlan, wayang_errors: str, val_errors: List) -> str:
         """
         Output a new message for the debugger agent to handle on
         """
@@ -50,9 +51,13 @@ class PromptLoader:
         # Get prompt template
         prompt_template = self._read_file("debugger_prompts/standard_prompt.txt")
 
-        # Convert to JSON
-        if not isinstance(failed_plan, str):
-            failed_plan = json.dumps(failed_plan, indent=4)
+        # Convert to correct JSON from WayangPlan model
+        if hasattr(failed_plan, "model_dump"):
+            failed_plan = json.dumps(failed_plan.model_dump(), indent=4)
+        elif hasattr(failed_plan, "to_json"):
+            failed_plan = failed_plan.to_json(indent=4)
+        else:
+            failed_plan = json.dumps(failed_plan.__dict__, indent=4)
 
         # Convert to JSON
         if not isinstance(wayang_errors, str):
@@ -67,6 +72,22 @@ class PromptLoader:
         prompt_template = prompt_template.replace("{val_errors}", val_errors)
 
         return prompt_template
+    
+    def load_debugger_answer_template(self, wayang_plan: WayangPlan) -> str:
+        """
+        Template for the debugger agent answer to the chat-correspondance
+        """
+
+        answer_template = self._read_file("debugger/agent_answer_template.txt")
+
+        fixed_plan = json.dumps([op.model_dump() for op in wayang_plan.operations], indent=2, ensure_ascii=False)
+        thoughts = wayang_plan.thoughts
+
+        answer_template = answer_template.replace("{fixed_plan}", fixed_plan)
+        answer_template = answer_template.replace("{thoughts}", thoughts)
+
+        return answer_template
+        
     
     def _read_file(self, file) -> str:
         """

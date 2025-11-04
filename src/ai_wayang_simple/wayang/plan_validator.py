@@ -1,10 +1,10 @@
-
 class PlanValidator:
 
     def validate_plan(self, plan):
         """
         Validates if a plan is correctly mapped.
         """
+
         errors = []
 
         for i, operation in enumerate(plan.get("operators", [])):
@@ -41,4 +41,3 @@ class PlanValidator:
             return False, errors
         else:
             return True, []
-        
