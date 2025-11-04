@@ -10,4 +10,4 @@ If error is an validation error, this is the validation errors:
 
 {val_errors}
 
-Return ONLY in JSON and nothing else
+Correct the plan. As told in tour system instructions. Remember to describe your reasoning of what you have fixed and why in the thoughts variable

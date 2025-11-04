@@ -46,6 +46,7 @@ class PromptLoader:
         # Load prompts
         system_prompt = self._read_file("debugger_prompts/system_prompt.txt")
         operators_prompt = self._read_file("operators.txt")
+        few_shot = None
 
         # Fill system prompt
         # REMEMBER TO LOAD
@@ -109,7 +110,7 @@ class PromptLoader:
         """
 
         # Load answer template
-        answer_template = self._read_file("debugger/agent_answer_template.txt")
+        answer_template = self._read_file("debugger_prompts/agent_answer.txt")
 
         # Load debuggers fixed plan and thoughts
         fixed_plan = json.dumps([op.model_dump() for op in wayang_plan.operations], indent=2, ensure_ascii=False)

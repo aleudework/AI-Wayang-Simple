@@ -1,0 +1,42 @@
+{
+  "person_test": {
+    "table_description": null,
+    "columns": {
+      "id": {
+        "type": "integer",
+        "examples": [
+          "4",
+          "7"
+        ]
+      },
+      "navn": {
+        "type": "character varying",
+        "examples": [
+          "Anna Kristensen",
+          "Kasper Holm"
+        ]
+      },
+      "alder": {
+        "type": "integer",
+        "examples": [
+          "21",
+          "40"
+        ]
+      },
+      "email": {
+        "type": "character varying",
+        "examples": [
+          "anna.kristensen@example.com",
+          "kasper.holm@example.com"
+        ]
+      },
+      "created_at": {
+        "type": "date",
+        "examples": [
+          "2025-10-01",
+          "2025-10-01"
+        ]
+      }
+    }
+  }
+}

@@ -7,7 +7,9 @@ from ai_wayang_simple.wayang.plan_mapper import PlanMapper
 from ai_wayang_simple.wayang.plan_validator import PlanValidator
 from ai_wayang_simple.wayang.wayang_executor import WayangExecutor
 from ai_wayang_simple.utils.logger import Logger
+from ai_wayang_simple.utils.schema_loader import SchemaLoader
 from datetime import datetime
+import os
 
 # Initialize MCP-server
 mcp = FastMCP(name="AI-Wayang-Simple", 
@@ -150,6 +152,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
 
                 # Logging
                 logger.add_message(f"Debug version {version}", {"model": str(response["raw"].model), "usage": response["raw"].usage.model_dump()})
+                logger.add_message(f"Debugger Agents thoughts, plan {version}", {"version": version, "thoughts": raw_plan.thoughts})
                 logger.add_message(f"Debugged plan: {version}", {"version": version, "plan": wayang_plan})
 
                 # Validate debugged plan
@@ -219,6 +222,36 @@ def get_wayang_result() -> str:
     """
 
     return last_session_result
+
+@mcp.tool()
+def load_schemas() -> str:
+    """
+    Loads schemas with examples from database for agents.
+
+    Returns
+        str: Informationen on number of added schemas
+    """
+    try:
+
+        # Create output folder path
+        base_dir = os.path.dirname(os.path.abspath(__file__)) # Path to server file
+        relative_path = os.path.join(base_dir, "..", "llm", "prompts", "data_examples") # Relative path to output folder
+        output_folder = os.path.abspath(relative_path) # Absolute path to folder
+        
+        # Initialize schema loader
+        schema_loader = SchemaLoader(config, output_folder)
+
+        # Return
+        msg = schema_loader.get_and_save_schemas()
+
+        # Returns true for success 
+        return msg
+
+    except Exception as e:
+        # Print and returns error
+        print(f"[ERROR] {e}")
+        return f"An error occured, error: {e}"
+
 
 # Test MCP
 @mcp.tool()

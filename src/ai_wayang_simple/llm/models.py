@@ -18,4 +18,4 @@ class WayangOperation(BaseModel):
 
 class WayangPlan(BaseModel):
     operations: List[WayangOperation]
-    thoughts: str
+    thoughts: str = Field(default=None, description="Describe your thoughts on how you ended up with this plan. Keep it short")
