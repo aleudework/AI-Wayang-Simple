@@ -15,7 +15,7 @@ class PromptLoader:
         """
 
         # Get prompt templates
-        system_prompt = self._read_file("builder_system_prompt.txt")
+        system_prompt = self._read_file("builder_prompts/system_prompt.txt")
         operators_prompt = self._read_file("operators.txt")
         data_prompt = self._read_file("data.txt")
         few_shot = None
@@ -31,8 +31,16 @@ class PromptLoader:
         Load and build system prompt for debugger agent
         """
 
+        # Load prompts
+        system_prompt = self._read_file("debugger_prompts/system_prompt.txt")
+        operators_prompt = self._read_file("operators.txt")
+
+        # Fill system prompt
+        # REMEMBER TO LOAD
+        system_prompt = system_prompt.replace("{operators}", operators_prompt)
+
         # Get and return system prompt
-        return self._read_file("debugger_system_prompt.txt")
+        return system_prompt
     
     def load_debugger_prompt_template(self, failed_plan: str, wayang_errors: str, val_errors: List) -> str:
         """
@@ -40,7 +48,7 @@ class PromptLoader:
         """
 
         # Get prompt template
-        prompt_template = self._read_file("debugger_standard_prompt.txt")
+        prompt_template = self._read_file("debugger_prompts/standard_prompt.txt")
 
         # Convert to JSON
         if not isinstance(failed_plan, str):

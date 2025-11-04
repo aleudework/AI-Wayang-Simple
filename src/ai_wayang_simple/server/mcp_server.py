@@ -199,3 +199,6 @@ def greeto(name: str) -> str:
 # 3) Make the debugger only do structured output as before
 # 4) Make the new plan go through the mapper again and
 # Validation class PlanValidator ?? 
+
+# Maybe not necessary anymore with anonymization (will be remapped)
+# Re-do the Debugger as it nows need to have operation part in its system prompt

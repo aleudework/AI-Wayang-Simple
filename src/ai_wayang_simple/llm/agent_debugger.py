@@ -4,6 +4,7 @@ import json
 
 from ai_wayang_simple.config.settings import DEBUGGER_MODEL_CONFIG
 from ai_wayang_simple.llm.prompt_loader import PromptLoader
+from ai_wayang_simple.llm.models import WayangPlan
 
 class Debugger:
     """
@@ -24,7 +25,7 @@ class Debugger:
         """
         return self.version
 
-    def debug_plan(self, failed_plan, wayang_errors, val_errors):
+    def debug_plan(self, plan: WayangPlan, wayang_errors, val_errors):
         """
         Debug a failed plan from an error message
         """
@@ -33,7 +34,7 @@ class Debugger:
         self.version += 1
 
         # Create new user prompt
-        prompt = PromptLoader().load_debugger_prompt_template(failed_plan, wayang_errors, val_errors)
+        prompt = PromptLoader().load_debugger_prompt_template(plan, wayang_errors, val_errors)
 
         # Add user prompt to chat
         self.chat.append({"role": "user", "content": prompt})
@@ -41,7 +42,8 @@ class Debugger:
         # Add model and current chat
         params = {
             "model": self.model,
-            "input": self.chat
+            "input": self.chat,
+            "text_format": WayangPlan
         }
 
         # Initialize effort
@@ -53,26 +55,27 @@ class Debugger:
         response = self.client.responses.parse(**params)
 
         # Extract output from response
-        plan_text = response.output_text
+        #plan_text = response.output_text
         
         # Format output to json
-        plan_json = self._extract_json(plan_text)
+        #plan_json = self._extract_json(plan_text)
 
         # Return output
         return {
             "raw": response,
-            "wayang_plan": plan_json,
+            "wayang_plan": response.output_parsed,
             "version": self.version
         }
 
     def _initialize_system_prompt(self) -> None:
         """
-        Helper to initialize system prompt
+        Helper to initialize system prompt and therefoe also the Debugger Agent
         """
 
         return [{"role": "system", "content": self.system_prompt}]
     
-
+    ### Temp, to be deleted after refactoring
+    ########
     def _extract_json(self, text):
         """
         Helper to extract text-output from model and ensure it is json
