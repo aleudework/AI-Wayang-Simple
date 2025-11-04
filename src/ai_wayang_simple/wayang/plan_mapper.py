@@ -31,19 +31,7 @@ class PlanMapper:
             "operators": []
         }
         
-    def map(self, plan: WayangPlan):
-        """
-        Converts WayangPlan til JSON Wayang plan (correct formatting)
-        """
-        if not isinstance(plan, WayangPlan):
-            raise ValueError("Plan draft must be a wayang plan")
-        
-        operations = plan.operations
 
-        self._add_operators(operations)
-
-        return self.plan
-    
     def plan_to_json(self, plan: WayangPlan):
         """
         Converts WayangPlan til JSON Wayang plan (correct formatting)
@@ -56,12 +44,6 @@ class PlanMapper:
         self._add_operators(operations)
 
         return self.plan
-    
-    def _flat_json(data: dict) -> WayangOperation:
-        # Flats
-        flat = {**data, **data.get("data", {})}
-        filtered = {k: v for k, v in flat.items() if k in WayangOperation.model_fields}
-        return WayangOperation(**filtered)
     
 
     def plan_from_json(self, plan) -> WayangPlan:

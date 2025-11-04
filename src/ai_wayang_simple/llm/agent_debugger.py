@@ -16,14 +16,23 @@ class Debugger:
         self.model = model or DEBUGGER_MODEL_CONFIG.get("model")
         self.system_prompt = system_prompt or PromptLoader().load_builder_system_prompt()
         self.version = version or 0
-        self.chat = self._initialize_system_prompt()
+        self.chat = []
 
     
     def get_version(self) -> int:
         """
         Getter to get plan version / iteration
         """
+
         return self.version
+    
+    def set_vesion(self, version: int) -> int:
+        """
+        Set the plan version / iteration
+        """ 
+        
+        self.version = version
+        return self.get_version()
 
     def debug_plan(self, plan: WayangPlan, wayang_errors, val_errors):
         """
@@ -66,13 +75,15 @@ class Debugger:
             "wayang_plan": response.output_parsed,
             "version": self.version
         }
-
-    def _initialize_system_prompt(self) -> None:
+    
+    def start_debugger(self) -> None:
         """
-        Helper to initialize system prompt and therefoe also the Debugger Agent
+        Initialize a new debugger session.
+        Removes previous chats from previous debugger sessions
         """
 
-        return [{"role": "system", "content": self.system_prompt}]
+        self.chat = [{"role": "system", "content": self.system_prompt}]
+
     
     ### Temp, to be deleted after refactoring
     ########

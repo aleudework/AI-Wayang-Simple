@@ -11,169 +11,187 @@ from datetime import datetime
 # Initialize MCP-server
 mcp = FastMCP(name="AI-Wayang-Simple", port=MCP_CONFIG.get("port"))
 
-# Initialise OpenAI Client
-builder_agent = Builder()
+# Initialize configs
+config = {
+    "input_config": INPUT_CONFIG,
+    "output_config": OUTPUT_CONFIG
+}
+
+# Initialize agents and objects
+builder_agent = Builder() # Initialize builder agent
+debugger_agent = Debugger() # Initialize debugger agent
+plan_mapper = PlanMapper(config=config) # Initialize mapper
+plan_validator = PlanValidator() # Initialize validator
+wayang_executor = WayangExecutor() # Wayang executor
 
 # Temp to test output
 temp_out = "Nothing to output"
 
 @mcp.tool()
 def query_wayang(describe_wayang_plan: str) -> str:
-    global temp_out # temp
     """
     Ask in English and describe the plan as detailed as possible.
     The function generates a wayang plan and executes it based on natural language in English
     """
+
+    global temp_out # temp
+
     try:
-
-        # Initialize logger
+        # Set up logger 
         logger = Logger()
-
-        # Log query message
         logger.add_message("Plan description from client LLM", describe_wayang_plan)
+        
+        # Initialize variables
+        status_code = None
+        result = None
 
-        # Generate draft plan
-        print("[INFO] Generates draft plan")
+
+        ### --- Generate Wayang Plan Draft --- ###
+
+        # Generate plan
+        print("[INFO] Generates raw plan")
         response = builder_agent.generate_plan(describe_wayang_plan)
-        draft_plan = response.get("wayang_plan")
+        raw_plan = response.get("wayang_plan")
 
         # Logs
         print("[INFO] Draft generated")
         logger.add_message("Builder Agent information", {"model": str(response["raw"].model), "usage": response["raw"].usage.model_dump()})
-        logger.add_message("Builder Agent's abstract/draft plan", draft_plan.model_dump())
+        logger.add_message("Builder Agent's abstract/raw plan", raw_plan.model_dump())
 
-        # Maps plan into Wayang JSON Plan
+
+        ### --- Map Raw Plan to Executable Plan --- ###
+
+        # Map plan
         print("[INFO] Mapping plan")
+        wayang_plan = plan_mapper.plan_to_json(raw_plan)
 
-        # Adds configs
-        config = {
-            "input_config": INPUT_CONFIG,
-            "output_config": OUTPUT_CONFIG
-        }
-
-        plan_mapper = PlanMapper(config)
-        wayang_plan = plan_mapper.map(draft_plan)
-
-        # Log
+        # Logs
         print("[INFO] Plan mapped")
         logger.add_message("Mapped plan finalized for execution", {"version": 1, "plan": wayang_plan})
 
+
+        ### --- Validate Plan --- ###
+
         # Validate plan before execution
-        val_bool, val_errors = PlanValidator().validate_plan(wayang_plan)
+        val_success, val_errors = plan_validator.validate_plan(wayang_plan)
 
-        if val_bool:
+        # Tell and log validation result
+        if val_success:
+            print("[INFO] Plan validated sucessfully")
 
-            # Execute plan
-            print("[INFO] Plan sent to Wayang for execution")
-            wayang_executor = WayangExecutor()
-            status_code, output = wayang_executor.execute_plan(wayang_plan)
-
-            # Return output when success
-            if status_code == 200:
-                print("[INFO] Plan succesfully executed")
-                logger.add_message("Plan executed", "Success")
-                temp_out = output # temp
-                return output
-            else:
-                print(f"[INFO] Couldn't execute plan succesfully, status {status_code}")
-                logger.add_message("Plan executed unsucessful", {"status_code": status_code, "output": output})
-        
-        # For failed validation, goes straight to debugging if debugging
         else:
             print(f"[INFO] Plan {version} failed validation: {val_errors}")
             logger.add_message(f"Failed validation", {"version": version, "errors": val_errors})
             status_code = 400
-            output = None
+
+
+        ### --- Execute Plan If Validated Successfully --- ###
+
+        if val_success:
+            # Execute plan in Wayang
+            print("[INFO] Plan sent to Wayang for execution")
+            status_code, result = wayang_executor.execute_plan(wayang_plan)
+            
+            # Log if plan couldn't execute
+            if status_code != 200:
+                print(f"[INFO] Couldn't execute plan succesfully, status {status_code}")
+                logger.add_message("Plan executed unsucessful", {"status_code": status_code, "output": result})
+        
+
+        ### --- Debug Plan --- ###
         
         # Check if debugger should be used
         use_debugger = DEBUGGER_MODEL_CONFIG.get("use_debugger")
 
         # Use debugger if true
-        if use_debugger == "True":
-            
-            # Logs from first fail
+        if use_debugger == "True" and status_code != 200:
 
             # Start logging
-            print("[INFO] Initialize and use Debugger Agent to fix plan")
+            print("[INFO] Using Debugger Agent to fix plan")
 
-            # Initialize debugger and max iterations to fix
-            max_itr = int(DEBUGGER_MODEL_CONFIG.get("max_itr"))
-            debugger_agent = Debugger(version=1)
+            # Set debugging parameters
+            max_itr = int(DEBUGGER_MODEL_CONFIG.get("max_itr")) # Get max iterations for debugging
+            debugger_agent.set_vesion(1) # Set version to number of plans already created this session
 
-            # Try to debug up to max iteration
-            for i in range(max_itr):
+            # Debug and execute plan up to max iterations
+            for _ in range(max_itr):
 
-                # Anonymize plan (remove password and username)
-                anonymized_plan = plan_mapper.anonymize_plan(wayang_plan)
+                # Map and anonymize plan from JSON to raw
+                failed_plan = plan_mapper.plan_from_json(wayang_plan)
 
-                # Debug and extract plan
-                response = debugger_agent.debug_plan(anonymized_plan, wayang_errors=output, val_errors=val_errors)
-                wayang_plan = response.get("wayang_plan")
+                # Debug plan
+                response = debugger_agent.debug_plan(failed_plan, wayang_errors=result, val_errors=val_errors) # Debug plan
+                version = debugger_agent.get_version() # Current plan version
+                raw_plan = response.get("wayang_plan") # Get only the debugged plan
 
-                # Get plan version
+                # Map the debugged plan to JSON-format
+                wayang_plan = plan_mapper.plan_to_json(raw_plan)
+
+                # Get current plan version
                 version = debugger_agent.get_version()
 
                 # Logs
                 logger.add_message(f"Debug version {version}", {"model": str(response["raw"].model), "usage": response["raw"].usage.model_dump()})
                 logger.add_message(f"Debugged plan: {version}", {"version": version, "plan": wayang_plan})
 
-               # If plan is not a valid json, continue debugging 
-                if wayang_plan is None:
-                    print(f"[INFO] Unsuccesfully debugged, version {version}")
-                    continue
+                # Validate debugged plan
+                val_success, val_errors = plan_validator.validate_plan(wayang_plan)
 
-                # Redo anonymization before execution
-                wayang_plan = plan_mapper.unanonymize_plan(wayang_plan)
-
-                # Validate plan
-                val_bool, val_errors = PlanValidator().validate_plan(wayang_plan)
-
-                # If validation fails
-                if not val_bool:
+                # If plan failed validation, continue debugging
+                if not val_success:
                     print(f"[INFO] Plan {version} failed validation: {val_errors}")
                     logger.add_message(f"Failed validation", {"version": version, "errors": val_errors})
                     status_code = 400
-                    output = None
+                    result = None
                     continue
+
+                print(f"[INFO] Succesfully validated and debugged plan, version {version}") # If plan validation succesfully
                 
-                # Sucessful validation
-                print(f"[INFO] Succesfully validated and debugged plan, version {version}")
-
-                # Execute plan
+                # Execute Wayang plan
                 print(f"[INFO] Plan {version} sent to Wayang for execution")
-                wayang_executor = WayangExecutor()
-                status_code, output = wayang_executor.execute_plan(wayang_plan)
+                status_code, result = wayang_executor.execute_plan(wayang_plan)
 
-                # Validate execution
+                # Break debugging loop if sucessfully executed
                 if status_code == 200:
-                    print(f"[INFO] Plan version {version} succesfully executed")
-                    logger.add_message(f"Plan version {version} executed", "Success")
-                    temp_out = output # temp
-                    return output
-                else:
+                    break
+
+                # Continue debugging if execution failed
+                if status_code != 200:
                     print(f"[ERROR] Couldn't execute plan version {version}, status {status_code}")
-                    logger.add_message(f"Plan version {version} executed unsucessful", {"status_code": status_code, "output": output})
+                    logger.add_message(f"Plan version {version} executed unsucessful", {"status_code": status_code, "output": result})
                     continue
             
             # Logs
             print(f"[INFO] Debugger reached max iteration at {max_itr}")
             logger.add_message("Debugger reached limit", f"The debug loop reached max iterations at {max_itr}")
 
+        # Return output when success
+        if status_code == 200:
+            print("[INFO] Plan succesfully executed")
+            logger.add_message("Plan executed", "Success")
+            temp_out = result # temp
 
-        # If execution went unsuccesfully and no debugging, or debugging got to max itr
+            # Return result to client
+            return result
+
+        # If failed to execute plan after debugging
         if status_code != 200:
             print(f"[ERROR] Couldn't execute plan succesfully, status {status_code}")
-            logger.add_message("Plan executed unsucessful", {"status_code": status_code, "output": output})
+            logger.add_message("Plan executed unsucessful", {"status_code": status_code, "output": result})
+            
+            # Return failure to client
             return "Couldn't execute wayang plan succesfully"
 
-        return
-
     except Exception as e:
+
         print(f"[ERROR] {e}")
+
         # Return error to client LLM to explain to user
         msg = f"An error occured, explain for the user: {e}"
         temp_out = msg # temp
+        # Return error message to client
         return msg
+
 
 @mcp.tool()
 def get_output() -> str:
