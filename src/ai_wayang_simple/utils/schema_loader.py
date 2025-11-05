@@ -14,8 +14,73 @@ class SchemaLoader():
         self.config = config["input_config"]
         self.output_folder = output_folder
 
+    def get_and_save_textfile_schemas(self) -> str:
+        """
+        Get all textfile names avaliable to use
+        If a textfile already is noted, they are not updated
+
+        Returns:
+            str: Schemas on available text files
+
+        """
+
+        try:
+            # Make path for output folder
+            output_folder = os.path.join(self.output_folder, "text_files")
+            # Input folder
+            folder = self.config["input_folder"]
+
+            # Check that input folder exists
+            if not os.path.exists(folder):
+                raise Exception("Input folder doesn't exists")
+
+            # Check that output folder exists
+            if not os.path.exists(output_folder):
+                raise Exception("Textfile output folder doesn't exists")
+            
+            # Get all .txt files in folder
+            files = [f for f in os.listdir(folder) if f.endswith(".txt")]
+
+            # Add all .txt files metadata as .json to output
+            for file in files:
+                # Remove .txt
+                file = file.replace(".txt", "")
+
+                # Create full path for output json file
+                path = os.path.join(output_folder, f"{file}.json")
+
+                # Variables to count added schemas
+                schema_exists_counter = 0
+                schema_added_counter = 0
+
+                # Continue if schema exists
+                if os.path.exists(path):
+                    schema_exists_counter += 1
+                    continue
+                
+                # Format schema to json structure
+                schema = self._format_to_json_textfile(file)
+
+                # Convert everything to strings (errors with other datatypes)
+                schema = json.loads(json.dumps(schema, default=str))
+
+                # Write schema to json file
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(schema, f, indent=2, ensure_ascii=False)
+                
+                print(f"[INFO] {file} schema added to {output_folder}")
+                schema_added_counter += 1
+
+            msg = f"[INFO] Added textfile schemas. Added {schema_added_counter} schemas and {schema_exists_counter} schemas already exists"
+            print(msg)
+
+            return msg
+                        
+        except Exception as e:
+            print(f"[Error] {e}")
+
     
-    def get_and_save_schemas(self) -> str:
+    def get_and_save_table_schemas(self) -> str:
         """
         Get all tables in the database, get two example records of each tables. Adds them to data_schema_examples folder.
         If a table already exists, it is not added again.
@@ -26,9 +91,12 @@ class SchemaLoader():
         """
 
         try:
+            # Make path for output folder
+            output_folder = os.path.join(self.output_folder, "tables")
+
             # Check that output folder exists
-            if not os.path.exists(self.output_folder):
-                raise Exception("Output folder doesn't exists")
+            if not os.path.exists(output_folder):
+                raise Exception("Table output folder doesn't exists")
             
             # Get schemas from db
             schemas = self._get_schemas()
@@ -42,7 +110,7 @@ class SchemaLoader():
             for table_name, table_data in schemas.groupby("table_name"):
                 
                 # Get filepath to output schema
-                filepath = f"{self.output_folder}/{table_name}.json"
+                filepath = f"{output_folder}/{table_name}.json"
 
                 # Continueto next if file already exists
                 if os.path.isfile(filepath):
@@ -50,7 +118,7 @@ class SchemaLoader():
                     continue
 
                 # Format schema to json structure
-                schema = self._format_to_json(table_name, table_data)
+                schema = self._format_to_json_jdbc(table_name, table_data)
 
                 # Convert everything to strings (errors with other datatypes)
                 schema = json.loads(json.dumps(schema, default=str))
@@ -59,10 +127,10 @@ class SchemaLoader():
                 with open(filepath, "w", encoding="utf-8") as f:
                     json.dump(schema, f, indent=2, ensure_ascii=False)
                 
-                print(f"[INFO] {table_name} schema added to {self.output_folder}")
+                print(f"[INFO] {table_name} schema added to {output_folder}")
                 schema_added_counter += 1
 
-            msg = f"[INFO] Added schemas. Added {schema_added_counter} schemas and {schema_exists_counter} schemas already exists"
+            msg = f"[INFO] Added table schemas. Added {schema_added_counter} schemas and {schema_exists_counter} schemas already exists"
             print(msg)
 
             return msg
@@ -144,8 +212,31 @@ class SchemaLoader():
 
         return schemas_examples
     
+    def _format_to_json_textfile(self, file_name: str) -> str:
+        """
+        Helper function. Take input textfile and returns JSON
 
-    def _format_to_json(self, table_name: str, table_data: DataFrame) -> str:
+        Args:
+            file_name (str): Name of textfile
+        
+        Returns:
+            str: JSON of formatted textfile
+            
+        """
+
+        # Create json_schema for textfileinpuit
+        schema_json = {
+            file_name: {
+                "file_description": None,
+                "input_type": "textfile_input",
+            }
+        }
+
+        return schema_json
+
+    
+
+    def _format_to_json_jdbc(self, table_name: str, table_data: DataFrame) -> str:
         """
         Helper function. Take a schema and examples for a table and returns it as JSON
 
@@ -162,6 +253,7 @@ class SchemaLoader():
         schema_json = {
             table_name: {
                 "table_description": None,
+                "input_type": "jdbc_input",
                 "columns": {}
             }
         }

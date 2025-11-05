@@ -226,7 +226,7 @@ def get_wayang_result() -> str:
 @mcp.tool()
 def load_schemas() -> str:
     """
-    Loads schemas with examples from database for agents.
+    Loads schemas with examples from database and textfiles for agents.
 
     Returns
         str: Informationen on number of added schemas
@@ -235,17 +235,23 @@ def load_schemas() -> str:
 
         # Create output folder path
         base_dir = os.path.dirname(os.path.abspath(__file__)) # Path to server file
-        relative_path = os.path.join(base_dir, "..", "llm", "prompts", "data_examples") # Relative path to output folder
+        relative_path = os.path.join(base_dir, "..", "..", "..", "data", "schemas") # Relative path to output folder
         output_folder = os.path.abspath(relative_path) # Absolute path to folder
         
         # Initialize schema loader
         schema_loader = SchemaLoader(config, output_folder)
+        
+        # For output messages
+        msg = []
 
-        # Return
-        msg = schema_loader.get_and_save_schemas()
+        # Load jdbc tables
+        msg.append(schema_loader.get_and_save_table_schemas())
 
-        # Returns true for success 
-        return msg
+        # Load textfiles
+        msg.append(schema_loader.get_and_save_textfile_schemas())
+
+        # Returns msg as str to client
+        return "\n".join(msg)
 
     except Exception as e:
         # Print and returns error

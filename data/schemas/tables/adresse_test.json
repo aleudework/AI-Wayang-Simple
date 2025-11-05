@@ -1,40 +1,41 @@
 {
   "adresse_test": {
     "table_description": null,
+    "input_type": "jdbc_input",
     "columns": {
       "id": {
         "type": "integer",
         "examples": [
-          "3",
-          "1"
+          "1",
+          "2"
         ]
       },
       "person_id": {
         "type": "integer",
         "examples": [
-          "2",
+          "1",
           "1"
         ]
       },
       "vejnavn": {
         "type": "character varying",
         "examples": [
-          "Vesterbro 8",
-          "Nørregade 12"
+          "Nørregade 12",
+          "Parkvej 45"
         ]
       },
       "postnummer": {
         "type": "character varying",
         "examples": [
-          "1620",
-          "8000"
+          "8000",
+          "8200"
         ]
       },
       "by": {
         "type": "character varying",
         "examples": [
-          "København V",
-          "Aarhus"
+          "Aarhus",
+          "Aarhus N"
         ]
       }
     }

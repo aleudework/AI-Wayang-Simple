@@ -1,33 +1,34 @@
 {
   "person_test": {
     "table_description": null,
+    "input_type": "jdbc_input",
     "columns": {
       "id": {
         "type": "integer",
         "examples": [
-          "4",
-          "7"
+          "11",
+          "28"
         ]
       },
       "navn": {
         "type": "character varying",
         "examples": [
-          "Anna Kristensen",
-          "Kasper Holm"
+          "Emil Hansen",
+          "Julie Vestergaard"
         ]
       },
       "alder": {
         "type": "integer",
         "examples": [
-          "21",
-          "40"
+          "32",
+          "27"
         ]
       },
       "email": {
         "type": "character varying",
         "examples": [
-          "anna.kristensen@example.com",
-          "kasper.holm@example.com"
+          "emil.hansen@example.com",
+          "julie.vestergaard@example.com"
         ]
       },
       "created_at": {
