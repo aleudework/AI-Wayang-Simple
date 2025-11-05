@@ -1,6 +1,7 @@
 from pathlib import Path
+import os
 import json
-from typing import List
+from typing import List, Dict
 from ai_wayang_simple.llm.models import WayangPlan
 
 
@@ -9,8 +10,9 @@ class PromptLoader:
     Loads and prepares prompts for agents
 
     """
-    def __init__(self, path: str | None = None):
-        self.path = Path(__file__).resolve().parent / "prompts"
+    def __init__(self, prompt_folder: str | None = None, data_folder: str | None = None):
+        self.prompt_folder = Path(__file__).resolve().parent / "prompts"
+        self.data_folder = Path(__file__).resolve().parent.parent.parent.parent / "data"
     
     def load_builder_system_prompt(self) -> str:
         """
@@ -21,15 +23,20 @@ class PromptLoader:
 
         """
 
-        # Get prompt templates
-        system_prompt = self._read_file("builder_prompts/system_prompt.txt")
-        operators_prompt = self._read_file("operators.txt")
-        data_prompt = self._read_file("data.txt")
-        few_shot = None
+        # Get system prompt template
+        system_prompt = self._read_file(self.prompt_folder, "builder_prompts/system_prompt.txt")
+        important_notes = self._read_file(self.prompt_folder, "builder_prompts/important_notes.txt")
+        
+        # Get general prompt templates
+        data_prompt = self.load_data_prompt()
+        operator_prompt = self.load_operators()
+        few_shot_prompt = self.load_few_shot_prompt()
 
         # Fill system prompt template
         system_prompt = system_prompt.replace("{data}", data_prompt)
-        system_prompt = system_prompt.replace("{operators}", operators_prompt)
+        system_prompt = system_prompt.replace("{operators}", operator_prompt)
+        system_prompt = system_prompt.replace("{examples}", few_shot_prompt)
+        system_prompt = system_prompt.replace("{important}", important_notes)
 
         return system_prompt
     
@@ -43,10 +50,12 @@ class PromptLoader:
 
         """
 
-        # Load prompts
-        system_prompt = self._read_file("debugger_prompts/system_prompt.txt")
-        operators_prompt = self._read_file("operators.txt")
-        few_shot = None
+        # Load system prompt template
+        system_prompt = self._read_file(self.prompt_folder, "debugger_prompts/system_prompt.txt")
+
+        # Load general prompt templates
+        operators_prompt = self.load_operators()
+        few_shot_prompt = self.load_few_shot_prompt()
 
         # Fill system prompt
         # REMEMBER TO LOAD
@@ -72,7 +81,7 @@ class PromptLoader:
         """
 
         # Get prompt template
-        prompt_template = self._read_file("debugger_prompts/standard_prompt.txt")
+        prompt_template = self._read_file(self.prompt_folder, "debugger_prompts/standard_prompt.txt")
 
         # Convert to correct JSON from WayangPlan model
         if hasattr(failed_plan, "model_dump"):
@@ -97,7 +106,7 @@ class PromptLoader:
         return prompt_template
     
     
-    def load_debugger_answer_template(self, wayang_plan: WayangPlan) -> str:
+    def load_debugger_answer(self, wayang_plan: WayangPlan) -> str:
         """
         Load and prepare Debugger Agents answer. It is for it to keep track of its own answers when debugging in multiple iterations
 
@@ -110,33 +119,218 @@ class PromptLoader:
         """
 
         # Load answer template
-        answer_template = self._read_file("debugger_prompts/agent_answer.txt")
+        answer_prompt = self._read_file(self.prompt_folder, "debugger_prompts/agent_answer.txt")
 
         # Load debuggers fixed plan and thoughts
         fixed_plan = json.dumps([op.model_dump() for op in wayang_plan.operations], indent=2, ensure_ascii=False)
         thoughts = wayang_plan.thoughts
         
         # Fill template
-        answer_template = answer_template.replace("{fixed_plan}", fixed_plan)
-        answer_template = answer_template.replace("{thoughts}", thoughts)
+        answer_prompt = answer_prompt.replace("{fixed_plan}", fixed_plan)
+        answer_prompt = answer_prompt.replace("{thoughts}", thoughts)
 
-        return answer_template
-        
+        # Return prompt
+        return answer_prompt
     
-    def _read_file(self, file: str) -> str:
+
+    
+    def load_data_prompt(self) -> str:
+        """
+        Loads data prompt with schemas in it
+
+        Returns:
+            (str): Data prompt
+        
+        """
+
+        # Load data prompt template
+        data_prompt = self._read_file(self.prompt_folder, "data.txt")
+
+        # Load schemas
+        schemas = self._load_schemas()
+
+        # Format to string for prompt
+        tables_str = "\n\n".join(schemas.get("tables", []))
+        textfiles_str = "\n\n".join(schemas.get("text_files", []))
+
+        # Add schemas to prompt template
+        data_prompt = data_prompt.replace("{jdbc_tables}", tables_str)
+        data_prompt = data_prompt.replace("{text_files}", textfiles_str)
+
+        # Return prompt
+        return data_prompt
+    
+    
+    def load_few_shot_prompt(self) -> str:
+        """
+        Load few shot prompt template
+
+        Returns:
+            (str): Few shot prompt template
+
+        """
+
+        few_shot_folder = os.path.join(self.data_folder, "few_shot_examples")
+
+        # Check if folder exists
+        if not os.path.exists(few_shot_folder):
+            raise FileNotFoundError(f"Schema folder does not exists at {few_shot_folder}")
+        
+        # Load few shot examples
+        few_shot_examples = self._read_txt_files(few_shot_folder)
+
+        # Load few shot prompt
+        few_shot_prompt = self._read_file(self.prompt_folder, "few_shot.txt")
+
+        # Convert examples to list
+        few_shot_str = "\n\n".join(few_shot_examples)
+    
+        # Add examples to prompt template
+        few_shot_prompt = few_shot_prompt.replace("{examples}", few_shot_str)
+
+        # Return prompt
+        return few_shot_prompt
+    
+
+    def load_operators(self) -> str:
+        """
+        Load operators prompt template
+
+        Returns:
+            (str): String of operations
+
+        """
+
+        # Return operators prompt template
+        return self._read_file(self.prompt_folder, "operators.txt")
+
+    
+    def _load_schemas(self) -> Dict:
+        """
+        Helper function to load data schemas
+
+        Args:
+
+
+        Returns:
+            (Dict): The final data prompt to be used
+
+    """
+        # Create schema folder path
+        schema_folder = os.path.join(self.data_folder, "schemas")
+
+        # Check if folder exists
+        if not os.path.exists(schema_folder):
+            raise FileNotFoundError(f"Schema folder does not exists at {schema_folder}")
+        
+        # Create table and textfile schemas
+        table_folder = os.path.join(schema_folder, "tables")
+        textfile_folder = os.path.join(schema_folder, "text_files")
+        
+        # List to store json schemas
+        table_schemas = self._read_json_files(table_folder)
+        textfile_schemas = self._read_json_files(textfile_folder)
+
+        # To store json
+        tables = []
+        textfiles = []
+
+        # Format tables
+        for schema in table_schemas:
+            formatted = json.dumps(schema, indent=3, ensure_ascii=False)
+            tables.append(formatted)
+
+        # Format textfiles
+        for schema in textfile_schemas:
+            formatted = json.dumps(schema, indent=3, ensure_ascii=False)
+            textfiles.append(formatted)
+
+        # Return schemas
+        schemas = {
+            "tables": tables,
+            "text_files": textfiles
+        
+        }
+        
+        return schemas
+    
+    
+    def _read_txt_files(self, folder: str | Path) -> List:
+        """
+        Helper function to take a folder and read all textfiles
+
+        Args:
+            folder (str | Path): Path of folder
+
+        Returns:
+            (List): List of all found .txt files
+
+        """
+
+        # List to store json
+        output = []
+
+        # Go over each .txt file
+        for root, _, files in os.walk(folder):
+            for file in files:
+                # IF json file
+                if file.endswith(".txt"):
+                    # Read file and append to schemas
+                    f = self._read_file(root, file)
+                    output.append(f)
+
+        return output
+    
+     
+    def _read_json_files(self, folder: str | Path) -> List:
+        """
+        Helper function that take and folder and returns all json in folder and lower level folders
+        
+        Args:
+            folder (str | Path): Path of folder
+
+        Returns:
+            (List): List of all found json
+
+        """
+
+        # List to store json
+        output = []
+
+        # Go over each json file
+        for root, _, files in os.walk(folder):
+            for file in files:
+                # IF json file
+                if file.endswith(".json"):
+                    # Read file and append to schemas
+                    json_data = self._read_file(root, file)
+                    output.append(json.loads(json_data))
+
+        return output
+
+    
+    def _read_file(self, folder: str | Path, file: str) -> str:
         """
         Helper function to open prompt template files
 
         Args:
+            folder (str | Path): Path to folder
             file (str): Name of prompt file including extension (.txt)
 
         Returns:
             (str): The file
 
         """
-        file_path = self.path / file
+        # Convert to path if str
+        if isinstance(folder, str):
+            folder = Path(folder)
+
+        # Build file path
+        file_path = folder / file
+
+        # Open file if exists
         if not file_path.exists():
-            raise FileNotFoundError(f"Couldn't find prompt file {file_path}")
+            raise FileNotFoundError(f"Couldn't find file {file_path}")
         else:
             with open(file_path, "r", encoding="utf-8") as f:
                 return f.read()

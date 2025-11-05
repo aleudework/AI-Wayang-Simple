@@ -1,45 +1,29 @@
-## Tables Definition (Available Data Sources)
+## Data Definition (Available Data Sources)
 
-You can only use the following **tables** as data sources.  
-Each table contains a set of **columns** with defined meanings.  
+You can only use the following **tables** or **textfiles** as data sources.  
+Each table contains a set of **columns** with defined meanings.
+For each column, you will get the column name, the data type and two random examples in the column
 When generating a plan, always reference tables and columns **exactly as defined below**.
 
+For each textfile you get the name of the textfile **always refer to the textfiles by its exact file name. No file extentions
+
+For each table and text files, there is sometimes provided a description to better understand the meaning and use of table
+
 ---
+### **Tables** 
 
-### **Table: person_test**
-The following columns describe the structure and meaning of data in the `person_test` table:
+{jdbc_tables}
 
-{
-  "person_test": {
-    "columns": [
-      { "position": 0, "name": "id", "type": "integer" },
-      { "position": 1, "name": "navn", "type": "character varying" },
-      { "position": 2, "name": "alder", "type": "integer" },
-      { "position": 3, "name": "email", "type": "character varying" },
-      { "position": 4, "name": "created_at", "type": "date" }
-    ]
-  }
-}
+### **Text files**
 
-### **Table: adresse_test**
-The following columns describe the structure and meaning of data in the `adresse_test` table:
-
-{
-  "adresse_test": {
-    "columns": [
-      { "position": 0, "name": "id", "type": "integer" },
-      { "position": 1, "name": "person_id", "type": "integer" },
-      { "position": 2, "name": "vejnavn", "type": "character varying" },
-      { "position": 3, "name": "postnummer", "type": "character varying" },
-      { "position": 4, "name": "by", "type": "character varying" }
-    ]
-  }
-}
+{text_files}
 
 ---
 
 ### General Notes
-- Always reference column names **exactly** as shown (case-sensitive).  
+- Always reference column names in tables **exactly** as shown (case-sensitive).  
 - Tables are the **input sources** used in operations.  
-- When defining a plan step, refer to the correct table name and its columns.  
+- When defining a plan step, refer to the correct table name and its columns.
 - Do not invent new tables or columns that are not listed here.  
+- When using a text file, always refer to the correct file name
+- Text files are loaded line by line

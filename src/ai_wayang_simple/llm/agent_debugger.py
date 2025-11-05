@@ -91,7 +91,7 @@ class Debugger:
 
         # Format text answer from agent
         wayang_plan = response.output_parsed
-        answer = PromptLoader().load_debugger_answer_template(wayang_plan)
+        answer = PromptLoader().load_debugger_answer(wayang_plan)
 
         # Add agent answer to chat - necessary if another debug iteration is needed
         self.chat.append({"role": "assistant", "content": answer})
