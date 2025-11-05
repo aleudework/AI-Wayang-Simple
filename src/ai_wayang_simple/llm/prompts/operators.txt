@@ -28,14 +28,22 @@ An input operator always have zero input but one to more outputs
   - `id`: Unique ID of this operator  
   - `output`: ID of the next operator or operators if more uses it for input
 
+  ### **TextFileInput**
+  - **Description:** Reads data line by line from a textfile
+  - **Use when:** You need to load data from a textfile.
+  - **Fields:**
+    - `cat`: `"input"`  
+    - `operatorName`: `"textFileInput"`  
+    - `fileName`: Name of the file. Only the filename. Don't include extentions or path
+    - `id`: Unique ID of this operator  
+    - `output`: ID of the next operator or operators if more uses it for input
+
 ---
 
 ## 2. Unary Operators
 
 You can choose from the following **unary data transformation operations**.  
 Each operator consumes a single input dataset and produces a single output dataset.
-
-An unary operator always have a single input and a single output
 
 ---
 
@@ -118,6 +126,21 @@ An unary operator always have a single input and a single output
 ---
 
 ## 3. Binary Operators
+
+
+You can choose from the following **binary data transformation operations**.  
+Each operator consumes two input datasets and produces a single output dataset.
+
+### **Join**
+- **Description:** Joins to datasets together based on their keys.
+- **Use when:** Joining to datasets together. It is an inner-join.
+- **Fields:**  
+  - `cat`: `"binary"`  
+  - `operatorName`: `"join"`  
+  - `thisKeyUDF`: Scala key extraction function  
+  - `thatKeyUDF`: Scala key extraction function  
+  - `id`, `input`, `output`
+
 
 ---
 

@@ -14,8 +14,10 @@ class PlanMapper:
         self.config = config
 
         self.operator_map = {
+
             # Input operators
             "jdbcRemoteInput": lambda op: OperatorMapper(op).jdbc_input(self.config["input_config"]),
+            "textFileInput": lambda op: OperatorMapper(op).textfile_input(self.config["input_config"]),
 
             # Unary operators
             "map": lambda op: OperatorMapper(op).map(),
@@ -25,6 +27,9 @@ class PlanMapper:
             "reduceBy": lambda op: OperatorMapper(op).reduceby(),
             "groupBy": lambda op: OperatorMapper(op).groupby(),
             "sort": lambda op: OperatorMapper(op).sort(),
+
+            # Binary operators
+            "join": lambda op: OperatorMapper(op).join(),
 
             # Output operators
             "textFileOutput": lambda op: OperatorMapper(op).textfile_output(self.config["output_config"])

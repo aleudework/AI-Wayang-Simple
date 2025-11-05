@@ -13,7 +13,10 @@ class WayangOperation(BaseModel):
     operatorName: str
     keyUdf: Optional[str] = None
     udf: Optional[str] = None
+    thisKeyUdf: Optional[str] = None
+    thatKeyUdf: Optional[str] = None
     table: Optional[str] = None
+    fileName: Optional[str] = None
     columnNames: List[str] = Field(default_factory=list)
 
 class WayangPlan(BaseModel):

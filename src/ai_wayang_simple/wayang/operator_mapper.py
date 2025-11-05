@@ -10,7 +10,7 @@ class OperatorMapper:
     def __init__(self, operation):
         self.op = operation
     
-    # Input operators
+    ### Input operators
     def jdbc_input(self, config):
         
         # Get only relevant queries
@@ -32,7 +32,28 @@ class OperatorMapper:
             }
         }
     
-    # Unary operators
+    def textfile_input(self, config):
+
+        # Get folder path
+        folder = config["input_folder"]
+        # Format folder correctly
+        folder = self._ensure_path_format(folder)
+        # Make filename
+        filename = f"{self.op.filename}.txt"
+        # Build filepath
+        path = folder + filename
+
+        return {
+            "id": self.op.id,
+            "cat": "input",
+            "input": [],
+            "output": self.op.output,
+            "operatorName": "textFileInput",
+            "data": {"filename": path}
+        }
+
+    
+    ### Unary operators
     def map(self):
         return {
             "id": self.op.id,
@@ -118,8 +139,24 @@ class OperatorMapper:
                 "keyUdf": self.op.keyUdf
             }
         }
+    
 
-    # Output operators
+    ### Binary operators
+    def join(self):
+        return {
+            "id": self.op.id,
+            "cat": "binary",
+            "input": self.op.input,
+            "output": self.op.output,
+            "operatorName": "join",
+            "data": {
+                "thisKeyUdf": self.op.thisKeyUdf,
+                "thatKeyUdf": self.op.thatKeyUdf
+            }
+        }
+
+
+    ### Output operators
     
     def textfile_output(self, config):
 

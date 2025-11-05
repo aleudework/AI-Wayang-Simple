@@ -14,34 +14,49 @@ class PlanValidator:
         
         # Go over each operation
         for i, operation in enumerate(plan.get("operators", [])):
-            # Get operation ID
-            op_id = int(operation.get("id", -1))
-            
             try:
-                # For unary operatoes
-                if operation.get("cat") == "unary":
-                    # Get input and output parameters
-                    inputs = operation.get("input", [])
-                    outputs = operation.get("output", [])
+                # Get parameters
+                op_id = int(operation.get("id", -1))
+                op_input = operation.get("input", [])
+                op_output = operation.get("output", [])
+                op_cat = operation.get("cat", None)
 
-                    # Input must have at least one id
-                    if len(inputs) < 1:
-                        errors.append(f"Operation id {op_id}: Missing input operator")
+                # Check that op_id is larger than zero
+                if op_id > 0:
+                    dummy = None
+                else:
+                    errors.append(f"Operation id {op_id}: ID must be larger than zero and a number")
 
-                    # Output must have at least one id and not be the last operation
-                    if len(outputs) < 1 and i != len(plan["operators"]) - 1:
+                # Check input ids are lower than id
+                for input_id in op_input:
+                    if input_id >= op_id:
+                        errors.append(f"Operation id {op_id}: Input id {input_id} ≥ operation id")
+
+                # Check output ids are higher than id
+                for output_id in op_output:
+                    if output_id <= op_id:
+                        errors.append(f"Operation id {op_id}: Output id {output_id} ≤ operation id")
+                
+                if op_cat == "unary":
+
+                    # Check that operator have a single input
+                    if len(op_output) < 1 and i != len(plan["operators"]) - 1:
                         if i != len(plan["operators"]) - 2:
                             errors.append(f"Operation id {op_id}: Missing output operator")
 
-                    # Input ids must be lower than operation id
-                    for input_id in inputs:
-                        if input_id >= op_id:
-                            errors.append(f"Operation id {op_id}: Input id {input_id} ≥ operation id")
+                    if len(op_input) != 1:
+                        errors.append(f"Operation id {op_id}: Unary operators can only have one input id")
+                                  
+                if op_cat == "binary":
 
-                    # Output ids must be higher than operation id
-                    for output_id in outputs:
-                        if output_id <= op_id:
-                            errors.append(f"Operation id {op_id}: Output id {output_id} ≤ operation id")
+                    # Must have an output id if it is not the last operation
+                    if len(op_output) < 1 and i != len(plan["operators"]) - 1:
+                        if i != len(plan["operators"]) - 2:
+                            errors.append(f"Operation id {op_id}: Missing output operator") 
+                    
+                    # Check that operators have two inputs
+                    if len(op_input) != 2:
+                        errors.append(f"Operation id {op_id}: Binary operators must have two input ids")
 
             except Exception as e:
                 errors.append(f"Operation id {op_id}: Unexpected error - {e}")
