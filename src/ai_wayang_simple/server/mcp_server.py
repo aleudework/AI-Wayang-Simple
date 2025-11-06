@@ -264,7 +264,23 @@ def load_schemas() -> str:
 def greeto(name: str) -> str:
     return f"Hello:)), {name}!"
 
-# Implement few-shot prompting
-# Implement joins oepraiton
-# Implement multiple output operations (not sure)
-# Add More data 
+#Test MCP
+import requests
+import json
+
+@mcp.tool()
+def execute_wayang_plan(plan_file_path: str) -> str:
+    url = 'http://localhost:8080/wayang-api-json/submit-plan/json'
+
+    with open(plan_file_path, 'r') as f:
+        plan = json.load(f)
+
+    res = requests.post(url, json=plan)
+
+    print("Status code:", res.status_code)
+    print("Response body:", res.text)
+    
+    if res.status_code != 200:
+        return f"Fejl {res.status_code}: {res.text}"
+
+    return res.text

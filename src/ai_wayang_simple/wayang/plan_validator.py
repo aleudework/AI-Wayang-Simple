@@ -44,8 +44,13 @@ class PlanValidator:
                         if i != len(plan["operators"]) - 2:
                             errors.append(f"Operation id {op_id}: Missing output operator")
 
+                    # Check if input operator is longer than one
                     if len(op_input) != 1:
                         errors.append(f"Operation id {op_id}: Unary operators can only have one input id")
+
+                    # Check if there is more than one output operator
+                    if len(op_output) > 1:
+                        errors.append(f"Operation id {op_id}: Unary operators can only have up to one output id")
                                   
                 if op_cat == "binary":
 

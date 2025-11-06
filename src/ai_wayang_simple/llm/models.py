@@ -16,7 +16,7 @@ class WayangOperation(BaseModel):
     thisKeyUdf: Optional[str] = None
     thatKeyUdf: Optional[str] = None
     table: Optional[str] = None
-    fileName: Optional[str] = None
+    inputFileName: Optional[str] = None
     columnNames: List[str] = Field(default_factory=list)
 
 class WayangPlan(BaseModel):

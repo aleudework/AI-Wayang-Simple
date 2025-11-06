@@ -3,6 +3,7 @@ import pandas as pd
 from pandas import DataFrame
 import json
 import os
+from typing import List
 
 class SchemaLoader():
     """
@@ -38,13 +39,28 @@ class SchemaLoader():
             if not os.path.exists(output_folder):
                 raise Exception("Textfile output folder doesn't exists")
             
-            # Get all .txt files in folder
-            files = [f for f in os.listdir(folder) if f.endswith(".txt")]
+            # Get all .txt file paths in folder
+            paths = [os.path.join(folder, f) 
+                     for f in os.listdir(folder) 
+                     if f.endswith(".txt")]
 
             # Add all .txt files metadata as .json to output
-            for file in files:
-                # Remove .txt
-                file = file.replace(".txt", "")
+            for path in paths:
+                # Only get file name
+                file = os.path.splitext(os.path.basename(path))[0]
+
+                # List for file data
+                file_data = []
+
+                # Add top 3 rows in file_data
+                with open(path, "r", encoding="utf-8") as f:
+                    for _ in range(3):
+                        line = f.readline()
+
+                        if not line:
+                            break
+
+                        file_data.append(line.rstrip("\n"))
 
                 # Create full path for output json file
                 path = os.path.join(output_folder, f"{file}.json")
@@ -59,7 +75,7 @@ class SchemaLoader():
                     continue
                 
                 # Format schema to json structure
-                schema = self._format_to_json_textfile(file)
+                schema = self._format_to_json_textfile(file, file_data)
 
                 # Convert everything to strings (errors with other datatypes)
                 schema = json.loads(json.dumps(schema, default=str))
@@ -212,12 +228,13 @@ class SchemaLoader():
 
         return schemas_examples
     
-    def _format_to_json_textfile(self, file_name: str) -> str:
+    def _format_to_json_textfile(self, file_name: str, file_data: List) -> str:
         """
         Helper function. Take input textfile and returns JSON
 
         Args:
             file_name (str): Name of textfile
+            file_data (List): Example lines from file
         
         Returns:
             str: JSON of formatted textfile
@@ -229,6 +246,7 @@ class SchemaLoader():
             file_name: {
                 "file_description": None,
                 "input_type": "textfile_input",
+                "examples_lines_from_file": file_data
             }
         }
 

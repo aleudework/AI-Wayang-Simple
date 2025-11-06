@@ -39,7 +39,7 @@ class OperatorMapper:
         # Format folder correctly
         folder = self._ensure_path_format(folder)
         # Make filename
-        filename = f"{self.op.fileName}.txt"
+        filename = f"{self.op.inputFileName}.txt"
         # Build filepath
         path = folder + filename
 

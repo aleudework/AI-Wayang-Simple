@@ -6,36 +6,36 @@
       "id": {
         "type": "integer",
         "examples": [
-          "1",
-          "2"
+          "11",
+          "5"
         ]
       },
       "person_id": {
         "type": "integer",
         "examples": [
-          "1",
-          "1"
+          "10",
+          "4"
         ]
       },
       "vejnavn": {
         "type": "character varying",
         "examples": [
-          "Nørregade 12",
-          "Parkvej 45"
+          "Engvej 33",
+          "Søndergade 14"
         ]
       },
       "postnummer": {
         "type": "character varying",
         "examples": [
-          "8000",
-          "8200"
+          "2300",
+          "8700"
         ]
       },
       "by": {
         "type": "character varying",
         "examples": [
-          "Aarhus",
-          "Aarhus N"
+          "København S",
+          "Horsens"
         ]
       }
     }

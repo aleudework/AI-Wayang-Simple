@@ -18,6 +18,10 @@ For each table and text files, there is sometimes provided a description to bett
 
 {text_files}
 
+### Important Notes for Input Text files
+Remember that Wayang always reads text files line by line. Pay close attention to the user's query, as you may need
+a flatMap or another unary function following to split, so you get words instead of lines.
+
 ---
 
 ### General Notes

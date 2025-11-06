@@ -1,9 +1,11 @@
 {
-  "my_textfile": {
+  "postal_codes": {
     "file_description": null,
     "input_type": "textfile_input",
     "examples_lines_from_file": [
-      "This is my textfile and I like this file"
+      "8000",
+      "4000",
+      "2300"
     ]
   }
 }

@@ -37,9 +37,9 @@ raw_plan = {
                     "output": [
                         3
                     ],
-                    "operatorName": "map",
+                    "operatorName": "filter",
                     "keyUdf": None,
-                    "udf": "(r: org.apache.wayang.basic.data.Record) => r.getField(0).toString",
+                    "udf": "(r: org.apache.wayang.basic.data.Record) => { val name = r.getField(1).toString; val alder = r.getField(2).toString.toInt; (name.matches(\".*[aeiouAEIOU].*\")) && alder < 40 }",
                     "table": None,
                     "columnNames": []
                 },
@@ -49,15 +49,145 @@ raw_plan = {
                     "input": [
                         2
                     ],
-                    "output": [],
-                    "operatorName": "filter",
+                    "output": [
+                        0
+                    ],
+                    "operatorName": "map",
                     "keyUdf": None,
-                    "udf": "(r: org.apache.wayang.basic.data.Record) => ((Number) r.getField(2)).intValue() > 18",
+                    "udf": "(r: org.apache.wayang.basic.data.Record) => r.getField(1).toString",
                     "table": None,
                     "columnNames": []
                 }
             ],
-            "description_of_plan": "Plan reads data from person_test, applies a simple per-record transformation, then filters adults over 18. The plan intentionally avoids multiple input IDs for input stage in order to keep the flow valid and coherent."
+            "thoughts": "Load person_test, filter by name containing a vowel and alder < 40, then select navn."
+        }
+
+raw_plan2 = {
+            "operations": [
+                {
+                    "cat": "input",
+                    "id": 1,
+                    "input": [],
+                    "output": [
+                        2
+                    ],
+                    "operatorName": "textFileInput",
+                    "keyUdf": None,
+                    "udf": None,
+                    "thisKeyUdf": None,
+                    "thatKeyUdf": None,
+                    "table": None,
+                    "inputFileName": "my_textfile",
+                    "columnNames": []
+                },
+                {
+                    "cat": "unary",
+                    "id": 2,
+                    "input": [
+                        1
+                    ],
+                    "output": [
+                        3
+                    ],
+                    "operatorName": "flatMap",
+                    "keyUdf": None,
+                    "udf": "(line: String) => line.toCharArray.filter(_.isLetter).map(_.toUpper).map(_.toString)",
+                    "thisKeyUdf": None,
+                    "thatKeyUdf": None,
+                    "table": None,
+                    "fileName": None,
+                    "columnNames": []
+                },
+                {
+                    "cat": "unary",
+                    "id": 3,
+                    "input": [
+                        2
+                    ],
+                    "output": [
+                        4
+                    ],
+                    "operatorName": "map",
+                    "keyUdf": None,
+                    "udf": "(ch: String) => (ch, 1)",
+                    "thisKeyUdf": None,
+                    "thatKeyUdf": None,
+                    "table": None,
+                    "fileName": None,
+                    "columnNames": []
+                },
+                {
+                    "cat": "unary",
+                    "id": 4,
+                    "input": [
+                        3
+                    ],
+                    "output": [
+                        5
+                    ],
+                    "operatorName": "reduceBy",
+                    "keyUdf": "(t: (String, Int)) => t._1",
+                    "udf": "(a: (String, Int), b: (String, Int)) => (a._1, a._2 + b._2)",
+                    "thisKeyUdf": None,
+                    "thatKeyUdf": None,
+                    "table": None,
+                    "fileName": None,
+                    "columnNames": []
+                },
+                {
+                    "cat": "unary",
+                    "id": 5,
+                    "input": [
+                        4
+                    ],
+                    "output": [
+                        6
+                    ],
+                    "operatorName": "sort",
+                    "keyUdf": None,
+                    "udf": "(t: (String, Int)) => -t._2",
+                    "thisKeyUdf": None,
+                    "thatKeyUdf": None,
+                    "table": None,
+                    "fileName": None,
+                    "columnNames": []
+                },
+                {
+                    "cat": "unary",
+                    "id": 6,
+                    "input": [
+                        5
+                    ],
+                    "output": [
+                        7
+                    ],
+                    "operatorName": "map",
+                    "keyUdf": None,
+                    "udf": "(t: (String, Int)) => s\"${t._1},${t._2}\"",
+                    "thisKeyUdf": None,
+                    "thatKeyUdf": None,
+                    "table": None,
+                    "fileName": None,
+                    "columnNames": []
+                },
+                {
+                    "cat": "output",
+                    "id": 7,
+                    "input": [
+                        6
+                    ],
+                    "output": [],
+                    "operatorName": "textFileOutput",
+                    "keyUdf": None,
+                    "udf": None,
+                    "thisKeyUdf": None,
+                    "thatKeyUdf": None,
+                    "table": None,
+                    "fileName": "hey",
+                    "columnNames": []
+                }
+            ],
+            "thoughts": "Read text file lines, extract uppercase letters, count via reduceBy, sort by descending count using negative key, format, and write to text file."
         }
 
 raw_wayangplan = WayangPlan(**raw_plan)

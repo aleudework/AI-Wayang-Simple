@@ -2,6 +2,7 @@ from ai_wayang_simple.llm.models import WayangOperation, WayangPlan
 from ai_wayang_simple.wayang.operator_mapper import OperatorMapper
 from typing import List
 import json
+import re
 
 class PlanMapper:
     """
@@ -94,6 +95,23 @@ class PlanMapper:
                 flat_op_data = {**op, **op.get("data", {})}
                 # Filter to only relevant keys in WayangOperations
                 op_data = {k: v for k, v in flat_op_data.items() if k in WayangOperation.model_fields}
+
+                ## Handle specific operators 
+                # Ensure correct inputFile
+                if op_data.get("operatorName") == "textFileInput":
+                    # Use flat_op_data because filename is removed
+                    filename = flat_op_data["filename"]
+                    # Remove path so only name of file is returned
+                    filename = filename.split("/")[-1].split(".")[0]
+                    op_data["inputFileName"] = filename
+
+                # Ensure only table name in jdbc_input
+                if op_data.get("operatorName") == "jdbcRemoteInput" and "table" in op_data:
+                    table = op_data["table"]
+                    match = re.search(r"FROM\s+([a-zA-Z0-9_]+)", table, re.IGNORECASE)
+                    if match:
+                        op_data["table"] = match.group(1)
+
                 # Append to the operation list
                 operations.append(WayangOperation(**op_data))
             

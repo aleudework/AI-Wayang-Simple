@@ -6,29 +6,29 @@
       "id": {
         "type": "integer",
         "examples": [
-          "11",
-          "28"
+          "5",
+          "6"
         ]
       },
       "navn": {
         "type": "character varying",
         "examples": [
-          "Emil Hansen",
-          "Julie Vestergaard"
+          "Mads Jensen",
+          "Julie Pedersen"
         ]
       },
       "alder": {
         "type": "integer",
         "examples": [
-          "32",
-          "27"
+          "37",
+          "22"
         ]
       },
       "email": {
         "type": "character varying",
         "examples": [
-          "emil.hansen@example.com",
-          "julie.vestergaard@example.com"
+          "mads.jensen@example.com",
+          "julie.pedersen@example.com"
         ]
       },
       "created_at": {

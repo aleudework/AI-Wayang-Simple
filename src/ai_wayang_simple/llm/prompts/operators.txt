@@ -34,7 +34,7 @@ An input operator always have zero input but one to more outputs
   - **Fields:**
     - `cat`: `"input"`  
     - `operatorName`: `"textFileInput"`  
-    - `fileName`: Name of the file. Only the filename. Don't include extentions or path
+    - `inputFileName`: Name of the input file. Only the filename. Don't include extentions or path
     - `id`: Unique ID of this operator  
     - `output`: ID of the next operator or operators if more uses it for input
 
@@ -44,6 +44,7 @@ An input operator always have zero input but one to more outputs
 
 You can choose from the following **unary data transformation operations**.  
 Each operator consumes a single input dataset and produces a single output dataset.
+You can not have more than one output ids in unary operators.
 
 ---
 
@@ -120,7 +121,7 @@ Each operator consumes a single input dataset and produces a single output datas
 - **Fields:**  
   - `cat`: `"unary"`  
   - `operatorName`: `"sort"`  
-  - `UDF`: Scala key function used for ordering  
+  - `keyUDF`: Scala key function used for ordering  
   - `id`, `input`, `output`
 
 ---

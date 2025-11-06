@@ -5,4 +5,4 @@ pl = PromptLoader()
 
 print(pl.load_few_shot_prompt())
 
-print(pl.load_debugger_system_prompt())
+print(pl.load_builder_system_prompt())
