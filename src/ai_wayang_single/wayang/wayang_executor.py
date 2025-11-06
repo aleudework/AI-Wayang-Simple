@@ -1,4 +1,4 @@
-from ai_wayang_simple.config.settings import WAYANG_CONFIG
+from ai_wayang_single.config.settings import WAYANG_CONFIG
 import requests
 import json
 

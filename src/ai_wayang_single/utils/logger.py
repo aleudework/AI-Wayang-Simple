@@ -1,4 +1,4 @@
-from ai_wayang_simple.config.settings import LOG_CONFIG
+from ai_wayang_single.config.settings import LOG_CONFIG
 from datetime import datetime
 import os
 import json

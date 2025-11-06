@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 import json
 from typing import List, Dict
-from ai_wayang_simple.llm.models import WayangPlan
+from ai_wayang_single.llm.models import WayangPlan
 
 
 class PromptLoader:

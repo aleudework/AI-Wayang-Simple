@@ -2,9 +2,9 @@ from openai import OpenAI
 import re
 import json
 from typing import List
-from ai_wayang_simple.config.settings import DEBUGGER_MODEL_CONFIG
-from ai_wayang_simple.llm.prompt_loader import PromptLoader
-from ai_wayang_simple.llm.models import WayangPlan
+from ai_wayang_single.config.settings import DEBUGGER_MODEL_CONFIG
+from ai_wayang_single.llm.prompt_loader import PromptLoader
+from ai_wayang_single.llm.models import WayangPlan
 
 
 class Debugger:

@@ -1,5 +1,5 @@
-from ai_wayang_simple.llm.models import WayangOperation, WayangPlan
-from ai_wayang_simple.wayang.operator_mapper import OperatorMapper
+from ai_wayang_single.llm.models import WayangOperation, WayangPlan
+from ai_wayang_single.wayang.operator_mapper import OperatorMapper
 from typing import List
 import json
 import re
