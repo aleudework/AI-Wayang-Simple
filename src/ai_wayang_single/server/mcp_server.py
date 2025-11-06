@@ -56,7 +56,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
     try:
         # Set up logger 
         logger = Logger()
-        logger.add_message("Plan description from client LLM", describe_wayang_plan)
+        logger.add_message("User query: Plan description from client LLM", describe_wayang_plan)
         
         # Initialize variables
         status_code = None # Status code from validator or Wayang server
