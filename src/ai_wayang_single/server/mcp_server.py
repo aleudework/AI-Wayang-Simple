@@ -159,7 +159,7 @@ def query_wayang(describe_wayang_plan: str) -> str:
                 # Logging
                 logger.add_message(f"Agent Usage: DebuggerAgent. Debug version {version} information", {"model": str(response["raw"].model), "usage": response["raw"].usage.model_dump()})
                 logger.add_message(f"Agent: DebuggerAgent's thoughts, plan {version}", {"version": version, "thoughts": raw_plan.thoughts})
-                logger.add_message(f"Agent: DebuggerAgent's plan: {version}", {"version": version, "plan": raw_plan})
+                logger.add_message(f"Agent: DebuggerAgent's plan: {version}", {"version": version, "plan": raw_plan.model_dump()})
 
 
                 # Map the debugged plan to JSON-format
