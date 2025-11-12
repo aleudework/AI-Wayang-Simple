@@ -54,11 +54,8 @@ class PromptLoader:
         # Load general prompt templates
         operators_prompt = self.load_operators()
 
-        data = self._load_schemas()
-
         # Fill system prompt
         system_prompt = system_prompt.replace("{operators}", operators_prompt)
-        system_prompt = system_prompt.replace("{data}", data)
 
         # Get and return system prompt
         return system_prompt
