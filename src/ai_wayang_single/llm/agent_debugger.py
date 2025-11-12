@@ -17,7 +17,7 @@ class Debugger:
     def __init__(self, model: str | None = None, system_prompt: str | None = None, version: int | None = None):
         self.client = OpenAI()
         self.model = model or DEBUGGER_MODEL_CONFIG.get("model")
-        self.system_prompt = system_prompt or PromptLoader().load_builder_system_prompt()
+        self.system_prompt = system_prompt or PromptLoader().load_debugger_system_prompt()
         self.version = version or 0
         self.chat = []
 
