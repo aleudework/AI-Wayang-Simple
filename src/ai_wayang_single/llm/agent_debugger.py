@@ -51,11 +51,12 @@ class Debugger:
         return self.get_version()
 
 
-    def debug_plan(self, plan: WayangPlan, wayang_errors: str, val_errors: List):
+    def debug_plan(self, query: str, plan: WayangPlan, wayang_errors: str, val_errors: List):
         """
         Debug a failed plan and tries to return. a new one
 
         Args:
+            query (str): The original natural-language user query
             plan (WayangPlan): The failed Wayang plan for debugging
             wayang_errors (str): The error given by the Wayang server if any
             val_errors (List): The error given by the PlanValidator if any
@@ -69,7 +70,7 @@ class Debugger:
         self.version += 1
 
         # Create new user prompt
-        prompt = PromptLoader().load_debugger_prompt_template(plan, wayang_errors, val_errors)
+        prompt = PromptLoader().load_debugger_prompt(plan, query, wayang_errors, val_errors)
 
         # Add user prompt to chat
         self.chat.append({"role": "user", "content": prompt})

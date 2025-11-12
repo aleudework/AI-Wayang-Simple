@@ -1,0 +1,8 @@
+## My fixed Wayang Plan:
+
+{fixed_plan}
+
+---
+## My reasoning on the errors and my fix:
+
+{thoughts}

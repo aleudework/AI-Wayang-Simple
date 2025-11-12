@@ -1,0 +1,23 @@
+An error occured in the builded and/or fixed Wayang Plan.
+
+Here is the failed Wayang JSON plan that should be fixed:
+
+{failed_plan}
+
+---
+Here is the original natural-language request of what the plan should do:
+
+{query}
+
+---
+This is the error from the Wayang server, if the error is an execution error on the Wayang server:
+
+{wayang_error} 
+
+This is the validation error, if the validation of the plan failed:
+
+{val_error}
+
+---
+
+Your goal is to interpret the Wayang or Validation error. Correct the failed Wayang Plan and output a new and fixed JSON Wayang Plan that can be executed correctly. Carefully review the whole conversation to see previous errors and previous fixes to the plan.

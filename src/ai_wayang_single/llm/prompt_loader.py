@@ -25,7 +25,6 @@ class PromptLoader:
 
         # Get system prompt template
         system_prompt = self._read_file(self.prompt_folder, "builder_prompts/system_prompt.txt")
-        important_notes = self._read_file(self.prompt_folder, "builder_prompts/important_notes.txt")
         
         # Get general prompt templates
         data_prompt = self.load_data_prompt()
@@ -36,7 +35,6 @@ class PromptLoader:
         system_prompt = system_prompt.replace("{data}", data_prompt)
         system_prompt = system_prompt.replace("{operators}", operator_prompt)
         system_prompt = system_prompt.replace("{examples}", few_shot_prompt)
-        system_prompt = system_prompt.replace("{important}", important_notes)
 
         return system_prompt
     
@@ -55,22 +53,24 @@ class PromptLoader:
 
         # Load general prompt templates
         operators_prompt = self.load_operators()
-        few_shot_prompt = self.load_few_shot_prompt()
+
+        data = self._load_schemas()
 
         # Fill system prompt
-        # REMEMBER TO LOAD
         system_prompt = system_prompt.replace("{operators}", operators_prompt)
+        system_prompt = system_prompt.replace("{data}", data)
 
         # Get and return system prompt
         return system_prompt
     
 
-    def load_debugger_prompt_template(self, failed_plan: WayangPlan, wayang_errors: str, val_errors: List) -> str:
+    def load_debugger_prompt(self, query: str, failed_plan: WayangPlan, wayang_errors: str, val_errors: List) -> str:
         """
         Load and prepare prompt to be sent to the Debugger.
         The prompt is about fixing a failed plan
 
         Args:
+            query (str): The original natural-language user query
             failed_plan (WayangPlan): The failed Wayang plan
             wayang_errors (str): The error provided by the Wayang server
             val_errors (List): Errors from PlanValidator if any
@@ -81,7 +81,7 @@ class PromptLoader:
         """
 
         # Get prompt template
-        prompt_template = self._read_file(self.prompt_folder, "debugger_prompts/standard_prompt.txt")
+        prompt_template = self._read_file(self.prompt_folder, "debugger_prompts/prompt.txt")
 
         # Convert to correct JSON from WayangPlan model
         if hasattr(failed_plan, "model_dump"):
@@ -99,9 +99,10 @@ class PromptLoader:
         val_errors = "\n".join([f"- {str(e)}" for e in val_errors])
 
         # Fill template
+        prompt_template = prompt_template.replace("{query}", query)
         prompt_template = prompt_template.replace("{failed_plan}", failed_plan)
-        prompt_template = prompt_template.replace("{wayang_errors}", wayang_errors)
-        prompt_template = prompt_template.replace("{val_errors}", val_errors)
+        prompt_template = prompt_template.replace("{wayang_error}", wayang_errors)
+        prompt_template = prompt_template.replace("{val_error}", val_errors)
 
         return prompt_template
     
@@ -119,7 +120,7 @@ class PromptLoader:
         """
 
         # Load answer template
-        answer_prompt = self._read_file(self.prompt_folder, "debugger_prompts/agent_answer.txt")
+        answer_prompt = self._read_file(self.prompt_folder, "debugger_prompts/answer.txt")
 
         # Load debuggers fixed plan and thoughts
         fixed_plan = json.dumps([op.model_dump() for op in wayang_plan.operations], indent=2, ensure_ascii=False)
