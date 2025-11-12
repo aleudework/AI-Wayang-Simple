@@ -12,7 +12,6 @@ You will output the fixed plan in structured_formatted **WayangPlan** schema pro
 You will recieve the folliwing inputs.
 
 1| A list of available operators for the Wayang Plan. This is given to you here in the System Prompt.
-2| The available data sources.
 3| The Wayang Plan in JSON that needs to be fixed.
 4| A validation or Wayang Execution error to help you fix the plan.
 
@@ -34,9 +33,6 @@ Each round of interaction include both:
 Treat the conversation as a *continous debugging session*.
 Use the chat history to track **previous errors** and **applied fixes** to refine and fix the plan.
 Your goal should always be to fix the plan from start.
-
----
-{data}
 
 ---
 ## Available Operators
