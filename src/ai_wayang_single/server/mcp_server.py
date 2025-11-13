@@ -32,7 +32,7 @@ wayang_executor = WayangExecutor() # Wayang executor
 last_session_result = "Nothing to output"
 
 @mcp.tool()
-def query_wayang(describe_wayang_plan: str) -> str:
+def query_wayang(describe_wayang_plan: str, model: str | None = None, reasoning: str | None = None) -> str:
     """
     Generates and execute a Wayang plan based on given query in national language.
     The query provided must be in Englis
@@ -52,6 +52,10 @@ def query_wayang(describe_wayang_plan: str) -> str:
 
     # Declaring variable as global
     global last_session_result
+
+    # Sets parametre (mainly for evaluation)
+    builder_agent.set_model_and_reasoning(model, reasoning)
+    debugger_agent.set_model_and_reasoning(model, reasoning)
 
     try:
         # Set up logger 
@@ -203,7 +207,6 @@ def query_wayang(describe_wayang_plan: str) -> str:
         if status_code == 200:
             print("[INFO] Plan succesfully executed")
             logger.add_message("Final: Sucessful. Plan executed", "Success")
-            temp_out = result # temp
 
             # Return result to client
             return result
@@ -222,7 +225,6 @@ def query_wayang(describe_wayang_plan: str) -> str:
 
         # Return error to client LLM to explain to user
         msg = f"An error occured, explain for the user: {e}"
-        temp_out = msg # temp
         # Return error message to client
         return msg
 
@@ -273,31 +275,3 @@ def load_schemas() -> str:
         # Print and returns error
         print(f"[ERROR] {e}")
         return f"An error occured, error: {e}"
-
-
-# TEMP
-# Test MCP
-@mcp.tool()
-def greeto(name: str) -> str:
-    return f"Hello:)), {name}!"
-
-#Test MCP
-import requests
-import json
-
-@mcp.tool()
-def execute_wayang_plan(plan_file_path: str) -> str:
-    url = 'http://localhost:8080/wayang-api-json/submit-plan/json'
-
-    with open(plan_file_path, 'r') as f:
-        plan = json.load(f)
-
-    res = requests.post(url, json=plan)
-
-    print("Status code:", res.status_code)
-    print("Response body:", res.text)
-    
-    if res.status_code != 200:
-        return f"Error: {res.status_code}: {res.text}"
-
-    return res.text
